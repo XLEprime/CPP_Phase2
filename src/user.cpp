@@ -256,12 +256,24 @@ QString UserManage::addItem(const QJsonObject &token, const QJsonObject &info) c
     QString username = verify(token);
     if (username.isEmpty())
         return "验证失败";
+    if (userMap[username]->getUserType() != CUSTOMER)
+        return "非用户不能发出快递";
 
     if (!info.contains("dstName") || !info.contains("description"))
         return "快递物品信息不全";
 
     if (!db->queryUserByName(info["dstName"].toString()))
         return "收件用户不存在";
+
+    QString retPassword;
+    int retType;
+    int retBalance;
+    QString retName;
+    QString retPhoneNumber;
+    QString retAddress;
+    db->queryUserByName(info["dstName"].toString(), retPassword, retType, retBalance, retName, retPhoneNumber, retAddress);
+    if (retType != CUSTOMER)
+        return "你只能给用户寄出快递";
 
     QString ret = transferBalance(token, 15, "ADMINISTRATOR");
     if (!ret.isEmpty())
@@ -279,6 +291,8 @@ QString UserManage::receiveItem(const QJsonObject &token, const QJsonObject &inf
     QString username = verify(token);
     if (username.isEmpty())
         return "验证失败";
+    if (userMap[username]->getUserType() != CUSTOMER)
+        return "非用户不能接收快递";
 
     if (!info.contains("id"))
         return "快递物品信息不全";
