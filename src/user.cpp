@@ -257,20 +257,17 @@ QString UserManage::addItem(const QJsonObject &token, const QJsonObject &info) c
     if (username.isEmpty())
         return "验证失败";
 
-    if (!info.contains("dstName") || !info.contains("description") || !info.contains("sendingTime_Year") || !info.contains("sendingTime_Month") || !info.contains("sendingTime_Day"))
+    if (!info.contains("dstName") || !info.contains("description"))
         return "快递物品信息不全";
 
     if (!db->queryUserByName(info["dstName"].toString()))
         return "收件用户不存在";
 
-    Time sendingTime{info["sendingTime_Year"].toInt(), info["sendingTime_Month"].toInt(), info["sendingTime_Day"].toInt()};
-    if (!sendingTime.isFuture())
-        return {"寄送时间必须是今天或未来"};
-
     QString ret = transferBalance(token, 15, "ADMINISTRATOR");
     if (!ret.isEmpty())
         return ret;
 
+    Time sendingTime(Time::getCurYear(), Time::getCurMonth(), Time::getCurDay());
     int id = itemManage->insertItem(15, PENDING_REVEICING, sendingTime, Time(-1, -1, -1), username, info["dstName"].toString(), info["description"].toString());
     qDebug() << "添加快递单号为" << id;
 

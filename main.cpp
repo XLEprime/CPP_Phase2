@@ -12,6 +12,15 @@
 #include <QTextStream>
 #include "include/user.h"
 
+#define ANSI_COLOR_RED "\x1b[31m"
+#define ANSI_COLOR_GREEN "\x1b[32m"
+#define ANSI_COLOR_YELLOW "\x1b[33m"
+#define ANSI_COLOR_BLUE "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN "\x1b[36m"
+#define ANSI_COLOR_WHITE "\x1b[37m"
+#define ANSI_COLOR_RESET "\x1b[0m"
+
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
     QByteArray localMsg = msg.toLocal8Bit();
@@ -20,19 +29,19 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
     switch (type)
     {
     case QtDebugMsg:
-        fprintf(stdout, "\x1b[33m[Debug]\x1b[36m(%s:%u)\x1b[0m %s\n", file, context.line, localMsg.constData());
+        fprintf(stdout, ANSI_COLOR_YELLOW "[Debug]" ANSI_COLOR_CYAN "(%s:%u)" ANSI_COLOR_RESET " %s\n", file, context.line, localMsg.constData());
         break;
     case QtInfoMsg:
-        fprintf(stdout, "\x1b[33m[Info]\x1b[36m(%s:%u)\x1b[0m %s\n", file, context.line, localMsg.constData());
+        fprintf(stdout, ANSI_COLOR_YELLOW "[Info]" ANSI_COLOR_CYAN "(%s:%u)" ANSI_COLOR_RESET " %s\n", file, context.line, localMsg.constData());
         break;
     case QtWarningMsg:
-        fprintf(stdout, "\x1b[33m[Warning]\x1b[36m(%s:%u)\x1b[0m %s\n", file, context.line, localMsg.constData());
+        fprintf(stdout, ANSI_COLOR_YELLOW "[Warning]" ANSI_COLOR_CYAN "(%s:%u)" ANSI_COLOR_RESET " %s\n", file, context.line, localMsg.constData());
         break;
     case QtCriticalMsg:
-        fprintf(stdout, "\x1b[33m[Critical]\x1b[36m(%s:%u)\x1b[0m %s\n", file, context.line, localMsg.constData());
+        fprintf(stdout, ANSI_COLOR_YELLOW "[Critical]" ANSI_COLOR_CYAN "(%s:%u)" ANSI_COLOR_RESET " %s\n", file, context.line, localMsg.constData());
         break;
     case QtFatalMsg:
-        fprintf(stdout, "\x1b[33m[Fatal]\x1b[36m(%s:%u)\x1b[0m %s\n", file, context.line, localMsg.constData());
+        fprintf(stdout, ANSI_COLOR_YELLOW "[Fatal]" ANSI_COLOR_CYAN "(%s:%u)" ANSI_COLOR_RESET " %s\n", file, context.line, localMsg.constData());
         break;
     }
 }
@@ -83,8 +92,9 @@ int main()
             qInfo() << "    若要查询所有符合该条件的物品，则该条件用*代替。若要查询全部，可以只输入querysrc。";
             qInfo() << "查找将收到的符合条件的快递: querysrc <物品单号> <寄送时间年> <寄送时间月> <寄送时间日> <接收时间年> <接收时间月> <接收时间日> <寄件用户的用户名>";
             qInfo() << "    若要查询所有符合该条件的物品，则该条件用*代替。若要查询全部，可以只输入querydst。";
-            qInfo() << "发送快递: send <寄送时间年> <寄送时间月> <寄送时间日> <收件用户的用户名> <描述>";
+            qInfo() << "发送快递: send <收件用户的用户名> <描述>";
             qInfo() << "接收快递: receive <物品单号>";
+            qInfo() << "退出系统: exit";
         }
         else if (args[0] == "time" && args.size() == 1)
         {
@@ -401,7 +411,7 @@ int main()
             else
                 qInfo() << "查询失败" << ret;
         }
-        else if (args[0] == "send" && args.size() == 6 && args[1].toInt(&ok) && ok && args[2].toInt(&ok) && ok && args[3].toInt(&ok) && ok)
+        else if (args[0] == "send" && args.size() == 3)
         {
             if (token.isNull())
             {
@@ -410,11 +420,8 @@ int main()
             }
 
             QJsonObject info;
-            info.insert("sendingTime_Year", args[1].toInt());
-            info.insert("sendingTime_Month", args[2].toInt());
-            info.insert("sendingTime_Day", args[3].toInt());
-            info.insert("dstName", args[4]);
-            info.insert("description", args[5]);
+            info.insert("dstName", args[1]);
+            info.insert("description", args[2]);
             QString ret = userManage.addItem(token.toObject(), info);
             if (ret.isEmpty())
                 qInfo() << "物品添加成功";
@@ -436,6 +443,8 @@ int main()
             else
                 qInfo() << "物品接收失败" << ret;
         }
+        else if (args[0] == "exit" && args.size() == 1)
+            break;
         else
             qInfo() << "指令输入有误，请输入help查看帮助";
     }
