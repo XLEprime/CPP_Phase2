@@ -29,19 +29,19 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
     switch (type)
     {
     case QtDebugMsg:
-        fprintf(stdout, ANSI_COLOR_YELLOW "[Debug]" ANSI_COLOR_CYAN "(%s:%u)" ANSI_COLOR_RESET " %s\n", file, context.line, localMsg.constData());
+        fprintf(stdout, ANSI_COLOR_BLUE "[Debug]" ANSI_COLOR_CYAN "(%s:%u)" ANSI_COLOR_RESET " %s\n", file, context.line, localMsg.constData());
         break;
     case QtInfoMsg:
         fprintf(stdout, ANSI_COLOR_YELLOW "[Info]" ANSI_COLOR_CYAN "(%s:%u)" ANSI_COLOR_RESET " %s\n", file, context.line, localMsg.constData());
         break;
     case QtWarningMsg:
-        fprintf(stdout, ANSI_COLOR_YELLOW "[Warning]" ANSI_COLOR_CYAN "(%s:%u)" ANSI_COLOR_RESET " %s\n", file, context.line, localMsg.constData());
+        fprintf(stdout, ANSI_COLOR_MAGENTA "[Warning]" ANSI_COLOR_CYAN "(%s:%u)" ANSI_COLOR_RESET " %s\n", file, context.line, localMsg.constData());
         break;
     case QtCriticalMsg:
-        fprintf(stdout, ANSI_COLOR_YELLOW "[Critical]" ANSI_COLOR_CYAN "(%s:%u)" ANSI_COLOR_RESET " %s\n", file, context.line, localMsg.constData());
+        fprintf(stdout, ANSI_COLOR_RED "[Critical]" ANSI_COLOR_CYAN "(%s:%u)" ANSI_COLOR_RESET " %s\n", file, context.line, localMsg.constData());
         break;
     case QtFatalMsg:
-        fprintf(stdout, ANSI_COLOR_YELLOW "[Fatal]" ANSI_COLOR_CYAN "(%s:%u)" ANSI_COLOR_RESET " %s\n", file, context.line, localMsg.constData());
+        fprintf(stdout, ANSI_COLOR_RED "[Fatal]" ANSI_COLOR_CYAN "(%s:%u)" ANSI_COLOR_RESET " %s\n", file, context.line, localMsg.constData());
         break;
     }
 }
