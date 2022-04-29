@@ -353,7 +353,7 @@ public:
      * @brief 发送快递物品
      * @param token 凭据
      * @param info 快递物品信息
-     * @return QString
+     * @return QString 发送成功则返回一个可以转换为整数的QString，否则返回错误信息
      * @note 物品信息格式:
      * ```json
      * {

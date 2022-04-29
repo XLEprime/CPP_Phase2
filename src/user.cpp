@@ -10,6 +10,7 @@
  */
 
 #include "../include/user.h"
+#include <string>
 
 QString UserManage::verify(const QJsonObject &token) const
 {
@@ -299,8 +300,8 @@ QString UserManage::sendItem(const QJsonObject &token, const QJsonObject &info) 
     Time sendingTime(Time::getCurYear(), Time::getCurMonth(), Time::getCurDay());
     int id = itemManage->insertItem(cost, info["type"].toInt(), PENDING_REVEICING, sendingTime, Time(-1, -1, -1), username, info["dstName"].toString(), info["description"].toString());
     qDebug() << "添加快递单号为" << id;
-
-    return {};
+    ret = QString::number(cost);
+    return ret;
 }
 
 QString UserManage::receiveItem(const QJsonObject &token, const QJsonObject &info) const

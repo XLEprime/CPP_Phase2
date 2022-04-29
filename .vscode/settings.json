@@ -22,6 +22,7 @@
         "unordered_map": "cpp",
         "vector": "cpp",
         "ctime": "cpp",
-        "qdebug": "cpp"
+        "qdebug": "cpp",
+        "string_view": "cpp"
     }
 }

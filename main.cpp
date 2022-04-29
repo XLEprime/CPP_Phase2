@@ -444,10 +444,10 @@ int main()
             info.insert("amount", amount);
             info.insert("description", args[4]);
             QString ret = userManage.sendItem(token.toObject(), info);
-            if (ret.isEmpty())
-                qInfo() << "物品添加成功";
+            if (ret.toInt(&ok) && ok)
+                qInfo() << "快递发送成功，共花费" << ret.toInt() << "元";
             else
-                qInfo() << "物品添加失败" << ret;
+                qInfo() << "快递发送失败" << ret.toInt();
         }
         else if (args[0] == "receive" && args.size() == 2 && args[1].toInt(&ok) && ok)
         {
