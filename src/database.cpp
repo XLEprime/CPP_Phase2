@@ -63,7 +63,7 @@ Database::Database(const QString &connectionName, const QString &fileName) : use
         QSqlQuery sqlQuery(db);
         sqlQuery.prepare("CREATE TABLE item( id INT PRIMARY KEY NOT NULL,"
                          "cost INT NOT NULL,"
-                         //  "type INT NOT NULL,"//pahse2开始有
+                         "type INT NOT NULL,"
                          "state INT NOT NULL,"
                          "sendingTime_Year INT NOT NULL,"
                          "sendingTime_Month INT NOT NULL,"
@@ -220,9 +220,9 @@ bool Database::queryUserByName(const QString &username, QString &retPassword, in
             retPassword = sqlQuery.value(0).toString();
             retType = sqlQuery.value(1).toInt();
             retBalance = sqlQuery.value(2).toInt();
-            retName= sqlQuery.value(3).toString();
+            retName = sqlQuery.value(3).toString();
             retPhoneNumber = sqlQuery.value(4).toString();
-            retAddress= sqlQuery.value(5).toString();
+            retAddress = sqlQuery.value(5).toString();
 
             qDebug() << "数据库: 用户 " << username << "查找成功";
             return true;
@@ -290,15 +290,16 @@ int Database::getDBMaxId(const QString &tableName) const
     }
 }
 
-void Database::insertItem(int id, int cost, int state, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName, const QString &description)
+void Database::insertItem(int id, int cost, int type, int state, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName, const QString &description)
 {
     QSqlQuery sqlQuery(db);
-    sqlQuery.prepare("INSERT INTO item VALUES(:id, :cost, :state,"
+    sqlQuery.prepare("INSERT INTO item VALUES(:id, :cost, :type, :state,"
                      " :sendingTime_Year, :sendingTime_Month, :sendingTime_Day,"
                      " :receivingTime_Year, :receivingTime_Month, :receivingTime_Day,"
                      " :srcName, :dstName, :description)"); // phase2开始添加type
     sqlQuery.bindValue(":id", id);
     sqlQuery.bindValue(":cost", cost);
+    sqlQuery.bindValue(":type", type);
     sqlQuery.bindValue(":state", state);
     sqlQuery.bindValue(":sendingTime_Year", sendingTime.year);
     sqlQuery.bindValue(":sendingTime_Month", sendingTime.month);
@@ -318,9 +319,24 @@ void Database::insertItem(int id, int cost, int state, const Time &sendingTime, 
 
 QSharedPointer<Item> Database::query2Item(const QSqlQuery &sqlQuery) const
 {
-    Time sendingTime{sqlQuery.value(3).toInt(), sqlQuery.value(4).toInt(), sqlQuery.value(5).toInt()};
-    Time receivingTime{sqlQuery.value(6).toInt(), sqlQuery.value(7).toInt(), sqlQuery.value(8).toInt()};
-    return QSharedPointer<Item>::create(sqlQuery.value(0).toInt(), sqlQuery.value(1).toInt(), sqlQuery.value(2).toInt(), sendingTime, receivingTime, sqlQuery.value(9).toString(), sqlQuery.value(10).toString(), sqlQuery.value(11).toString());
+    Time sendingTime{sqlQuery.value(4).toInt(), sqlQuery.value(5).toInt(), sqlQuery.value(6).toInt()};
+    Time receivingTime{sqlQuery.value(7).toInt(), sqlQuery.value(8).toInt(), sqlQuery.value(9).toInt()};
+
+    QSharedPointer<Item> result;
+    switch (sqlQuery.value(2).toInt())
+    {
+    case FRAGILE:
+        result = QSharedPointer<FragileItem>::create(sqlQuery.value(0).toInt(), sqlQuery.value(1).toInt(), sqlQuery.value(3).toInt(), sendingTime, receivingTime, sqlQuery.value(10).toString(), sqlQuery.value(11).toString(), sqlQuery.value(12).toString());
+        break;
+    case BOOK:
+        result = QSharedPointer<Book>::create(sqlQuery.value(0).toInt(), sqlQuery.value(1).toInt(), sqlQuery.value(3).toInt(), sendingTime, receivingTime, sqlQuery.value(10).toString(), sqlQuery.value(11).toString(), sqlQuery.value(12).toString());
+        break;
+    case NORMAL:
+        result = QSharedPointer<NormalItem>::create(sqlQuery.value(0).toInt(), sqlQuery.value(1).toInt(), sqlQuery.value(3).toInt(), sendingTime, receivingTime, sqlQuery.value(10).toString(), sqlQuery.value(11).toString(), sqlQuery.value(12).toString());
+        break;
+    }
+
+    return result;
 }
 
 int Database::queryItemByFilter(QList<QSharedPointer<Item>> &result, int id, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName) const

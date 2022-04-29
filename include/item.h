@@ -15,11 +15,22 @@
 #ifndef ITEM_H
 #define ITEM_H
 
+#define DEBUG
+
 #include <QSharedPointer>
+#include <QDebug>
 #include "time.h"
 
 const int RECEIVED = 1;          //已签收
 const int PENDING_REVEICING = 2; //待签收
+
+const int FRAGILE = 1; //易碎物
+const int BOOK = 2;    //图书
+const int NORMAL = 3;  //普通快递
+
+const int FRAGILE_ITEM_PRICE = 8; //易碎品单价
+const int BOOK_PRICE = 2;         //图书单价
+const int NORMAL_ITEM_PRICE = 5;  //普通快递单价
 
 class Database;
 class Time;
@@ -48,24 +59,19 @@ public:
      * @param _description 物品描述
      * @note 注意是否使用std::move
      */
-    Item(int _id,
-         int _cost,
-         int _state,
-         Time _sendingTime,
-         Time _receivingTime,
-         QString _srcName,
-         QString _dstName,
-         QString _description)
-        : id(_id),
-          cost(_cost),
-          state(_state),
-          sendingTime(_sendingTime),
-          receivingTime(_receivingTime),
-          srcName(_srcName),
-          dstName(_dstName),
-          description(_description) {}
+    Item(int _id, int _cost, int _state, Time _sendingTime, Time _receivingTime, QString _srcName, QString _dstName, QString _description) : id(_id), cost(_cost), state(_state), sendingTime(_sendingTime), receivingTime(_receivingTime), srcName(_srcName), dstName(_dstName), description(_description)
+    {
+#ifdef DEBUG
+        qDebug() << "构造item";
+#endif
+    }
 
-    ~Item() = default;
+    virtual ~Item()
+    {
+#ifdef DEBUG
+        qDebug() << "析构item";
+#endif
+    }
 
     /**
      * @brief 获得物品id
@@ -74,10 +80,22 @@ public:
     int getId() const { return id; }
 
     /**
-     * @brief 获得物品花费
-     * @return int 物品花费
+     * @brief 获得物品单价
+     * @return int 物品单价
      */
-    int getCost() const { return cost; }
+    virtual int getPrice() const = 0;
+
+    /**
+     * @brief 获得物品总花费
+     * @return int 物品总花费
+     */
+    int getCost() const { return cost; };
+
+    /**
+     * @brief 获得物品类型
+     * @return int 物品类型
+     */
+    int getType() const { return type; };
 
     /**
      * @brief 获得物品状态
@@ -117,13 +135,113 @@ public:
 
 protected:
     int id;              // 物品ID 主键
-    int cost;            //价格 phase1中为15元一件
+    int cost;            //总花费
+    int type;            //物品种类
     int state;           //物品状态
     Time sendingTime;    //寄送时间
     Time receivingTime;  //接收时间
     QString srcName;     //寄件用户的用户名
     QString dstName;     //收件用户的用户名
     QString description; //物品描述
+};
+
+//易碎品类
+class FragileItem : public Item
+{
+public:
+    FragileItem() = delete;
+
+    /**
+     * @brief 构造函数
+     *
+     * @param _id 物品ID 主键
+     * @param _state 物品状态
+     * @param _sendingTime 寄送时间
+     * @param _receivingTime 接收时间
+     * @param _srcName 寄件用户的用户名
+     * @param _dstName 收件用户的用户名
+     * @param _description 物品描述
+     * @note 注意是否使用std::move
+     */
+    FragileItem(int _id, int _cost, int _state, Time _sendingTime, Time _receivingTime, QString _srcName, QString _dstName, QString _description) : Item(_id, _cost, _state, _sendingTime, _receivingTime, _srcName, _dstName, _description) { type = FRAGILE; };
+
+    /**
+     * @brief 默认析构函数
+     * @note 虚函数
+     */
+    virtual ~FragileItem() = default;
+
+    /**
+     * @brief 获得物品单价
+     * @return int 物品单价
+     */
+    virtual int getPrice() const override { return FRAGILE_ITEM_PRICE; };
+};
+
+//图书类
+class Book : public Item
+{
+public:
+    Book() = delete;
+
+    /**
+     * @brief 构造函数
+     *
+     * @param _id 物品ID 主键
+     * @param _state 物品状态
+     * @param _sendingTime 寄送时间
+     * @param _receivingTime 接收时间
+     * @param _srcName 寄件用户的用户名
+     * @param _dstName 收件用户的用户名
+     * @param _description 物品描述
+     * @note 注意是否使用std::move
+     */
+    Book(int _id, int _cost, int _state, Time _sendingTime, Time _receivingTime, QString _srcName, QString _dstName, QString _description) : Item(_id, _cost, _state, _sendingTime, _receivingTime, _srcName, _dstName, _description) { type = BOOK; };
+
+    /**
+     * @brief 默认析构函数
+     * @note 虚函数
+     */
+    virtual ~Book() = default;
+
+    /**
+     * @brief 获得物品单价
+     * @return int 物品单价
+     */
+    virtual int getPrice() const override { return BOOK_PRICE; };
+};
+
+//普通快递类
+class NormalItem : public Item
+{
+public:
+    NormalItem() = delete;
+
+    /**
+     * @brief 构造函数
+     *
+     * @param _id 物品ID 主键
+     * @param _state 物品状态
+     * @param _sendingTime 寄送时间
+     * @param _receivingTime 接收时间
+     * @param _srcName 寄件用户的用户名
+     * @param _dstName 收件用户的用户名
+     * @param _description 物品描述
+     * @note 注意是否使用std::move
+     */
+    NormalItem(int _id, int _cost, int _state, Time _sendingTime, Time _receivingTime, QString _srcName, QString _dstName, QString _description) : Item(_id, _cost, _state, _sendingTime, _receivingTime, _srcName, _dstName, _description) { type = NORMAL; };
+
+    /**
+     * @brief 默认析构函数
+     * @note 虚函数
+     */
+    virtual ~NormalItem() = default;
+
+    /**
+     * @brief 获得物品单价
+     * @return int 物品单价
+     */
+    virtual int getPrice() const override { return NORMAL_ITEM_PRICE; };
 };
 
 /**
@@ -149,6 +267,7 @@ public:
      *
      * @param cost 快递花费
      * @param state 物品状态
+     * @param type 物品状态
      * @param sendingTime 寄送时间
      * @param receivingTime 接收时间
      * @param srcName 寄件用户的用户名
@@ -161,6 +280,7 @@ public:
     int insertItem(
         const int cost,
         const int state,
+        const int type,
         const Time &sendingTime,
         const Time &receivingTime,
         const QString &srcName,
@@ -204,7 +324,7 @@ public:
      */
     bool modifyState(const int id, const int state);
 
-    bool modifyReceivingTime(const int id,const Time &receivingTime);
+    bool modifyReceivingTime(const int id, const Time &receivingTime);
 
     /**
      * @brief 从数据库中删除对应id的物品

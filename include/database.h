@@ -123,7 +123,8 @@ public:
      * @brief 插入物品
      *
      * @param id 主键
-     * @param cost 价格 phase1中为15元一件
+     * @param cost 总花费
+     * @param type 物品类型
      * @param state 物品状态
      * @param sendingTime 寄送时间
      * @param receivingTime 接收时间
@@ -131,7 +132,7 @@ public:
      * @param dstName 收件用户的用户名
      * @param description 物品描述
      */
-    void insertItem(int id, int cost, int state, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName, const QString &description);
+    void insertItem(int id, int cost, int type, int state, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName, const QString &description);
 
     /**
      * @brief 将数据库的Item查询结果转换成指向Item的指针

@@ -60,6 +60,7 @@ int main()
 
     QVector<QString> userType{"CUSTOMER", "ADMINISTRATOR"};
     QVector<QString> itemState{"", "已签收", "待签收"};
+    QVector<QString> itemType{"", "易碎品", "图书", "普通快递"};
     QString input;
     Time::init();
 
@@ -92,7 +93,8 @@ int main()
             qInfo() << "    若要查询所有符合该条件的物品，则该条件用*代替。若要查询全部，可以只输入querysrc。";
             qInfo() << "查找将收到的符合条件的快递: querysrc <物品单号> <寄送时间年> <寄送时间月> <寄送时间日> <接收时间年> <接收时间月> <接收时间日> <寄件用户的用户名>";
             qInfo() << "    若要查询所有符合该条件的物品，则该条件用*代替。若要查询全部，可以只输入querydst。";
-            qInfo() << "发送快递: send <收件用户的用户名> <描述>";
+            qInfo() << "发送快递: send <收件用户的用户名> <物品类别> <数量> <描述>";
+            qInfo() << "    其中<物品类别>为整数：1 易碎品 2 图书 3普通快递 <数量>为整数： 易碎品单位为斤 图书单位为本 普通快递单位为斤 若为小数则向上取整计算价格";
             qInfo() << "接收快递: receive <物品单号>";
             qInfo() << "退出系统: exit";
         }
@@ -284,7 +286,7 @@ int main()
                 for (const auto &i : queryRet)
                 {
                     QJsonObject item = i.toObject();
-                    qInfo() << "物品单号为 " << item["id"].toInt() << " 花费为 " << item["cost"].toInt() << " 状态为 " << itemState[item["state"].toInt()] << " 寄送时间为 " << item["sendingTime_Year"].toInt() << "/" << item["sendingTime_Month"].toInt() << "/" << item["sendingTime_Day"].toInt()
+                    qInfo() << "物品单号为 " << item["id"].toInt() << " 花费为 " << item["cost"].toInt() << "快递类型为 " << itemType[item["type"].toInt()] << " 状态为 " << itemState[item["state"].toInt()] << " 寄送时间为 " << item["sendingTime_Year"].toInt() << "/" << item["sendingTime_Month"].toInt() << "/" << item["sendingTime_Day"].toInt()
                             << " 接收时间为 " << item["receivingTime_Year"].toInt() << "/" << item["receivingTime_Month"].toInt() << "/" << item["receivingTime_Day"].toInt() << "/"
                             << " 寄件人为 " << item["srcName"].toString() << "收件人为" << item["dstName"].toString() << "描述为" << item["description"].toString();
                 }
@@ -322,7 +324,7 @@ int main()
                 for (const auto &i : queryRet)
                 {
                     QJsonObject item = i.toObject();
-                    qInfo() << "物品单号为 " << item["id"].toInt() << " 花费为 " << item["cost"].toInt() << " 状态为 " << itemState[item["state"].toInt()] << " 寄送时间为 " << item["sendingTime_Year"].toInt() << "/" << item["sendingTime_Month"].toInt() << "/" << item["sendingTime_Day"].toInt()
+                    qInfo() << "物品单号为 " << item["id"].toInt() << " 花费为 " << item["cost"].toInt() << "快递类型为 " << itemType[item["type"].toInt()] << " 状态为 " << itemState[item["state"].toInt()] << " 寄送时间为 " << item["sendingTime_Year"].toInt() << "/" << item["sendingTime_Month"].toInt() << "/" << item["sendingTime_Day"].toInt()
                             << " 接收时间为 " << item["receivingTime_Year"].toInt() << "/" << item["receivingTime_Month"].toInt() << "/" << item["receivingTime_Day"].toInt() << "/"
                             << " 寄件人为 " << item["srcName"].toString() << "收件人为" << item["dstName"].toString() << "描述为" << item["description"].toString();
                 }
@@ -344,7 +346,7 @@ int main()
                 for (const auto &i : queryRet)
                 {
                     QJsonObject item = i.toObject();
-                    qInfo() << "物品单号为 " << item["id"].toInt() << " 花费为 " << item["cost"].toInt() << " 状态为 " << itemState[item["state"].toInt()] << " 寄送时间为 " << item["sendingTime_Year"].toInt() << "/" << item["sendingTime_Month"].toInt() << "/" << item["sendingTime_Day"].toInt()
+                    qInfo() << "物品单号为 " << item["id"].toInt() << " 花费为 " << item["cost"].toInt() << "快递类型为 " << itemType[item["type"].toInt()] << " 状态为 " << itemState[item["state"].toInt()] << " 寄送时间为 " << item["sendingTime_Year"].toInt() << "/" << item["sendingTime_Month"].toInt() << "/" << item["sendingTime_Day"].toInt()
                             << " 接收时间为 " << item["receivingTime_Year"].toInt() << "/" << item["receivingTime_Month"].toInt() << "/" << item["receivingTime_Day"].toInt() << "/"
                             << " 寄件人为 " << item["srcName"].toString() << "收件人为" << item["dstName"].toString() << "描述为" << item["description"].toString();
                 }
@@ -382,7 +384,7 @@ int main()
                 for (const auto &i : queryRet)
                 {
                     QJsonObject item = i.toObject();
-                    qInfo() << "物品单号为 " << item["id"].toInt() << " 花费为 " << item["cost"].toInt() << " 状态为 " << itemState[item["state"].toInt()] << " 寄送时间为 " << item["sendingTime_Year"].toInt() << "/" << item["sendingTime_Month"].toInt() << "/" << item["sendingTime_Day"].toInt()
+                    qInfo() << "物品单号为 " << item["id"].toInt() << " 花费为 " << item["cost"].toInt() << "快递类型为 " << itemType[item["type"].toInt()] << " 状态为 " << itemState[item["state"].toInt()] << " 寄送时间为 " << item["sendingTime_Year"].toInt() << "/" << item["sendingTime_Month"].toInt() << "/" << item["sendingTime_Day"].toInt()
                             << " 接收时间为 " << item["receivingTime_Year"].toInt() << "/" << item["receivingTime_Month"].toInt() << "/" << item["receivingTime_Day"].toInt() << "/"
                             << " 寄件人为 " << item["srcName"].toString() << "收件人为" << item["dstName"].toString() << "描述为" << item["description"].toString();
                 }
@@ -404,14 +406,14 @@ int main()
                 for (const auto &i : queryRet)
                 {
                     QJsonObject item = i.toObject();
-                    qInfo() << "物品单号为 " << item["id"].toInt() << " 花费为 " << item["cost"].toInt() << " 状态为 " << itemState[item["state"].toInt()] << " 寄送时间为 " << item["sendingTime_Year"].toInt() << "/" << item["sendingTime_Month"].toInt() << "/" << item["sendingTime_Day"].toInt()
+                    qInfo() << "物品单号为 " << item["id"].toInt() << " 花费为 " << item["cost"].toInt() << "快递类型为 " << itemType[item["type"].toInt()] << " 状态为 " << itemState[item["state"].toInt()] << " 寄送时间为 " << item["sendingTime_Year"].toInt() << "/" << item["sendingTime_Month"].toInt() << "/" << item["sendingTime_Day"].toInt()
                             << " 接收时间为 " << item["receivingTime_Year"].toInt() << "/" << item["receivingTime_Month"].toInt() << "/" << item["receivingTime_Day"].toInt() << "/"
                             << " 寄件人为 " << item["srcName"].toString() << "收件人为" << item["dstName"].toString() << "描述为" << item["description"].toString();
                 }
             else
                 qInfo() << "查询失败" << ret;
         }
-        else if (args[0] == "send" && args.size() == 3)
+        else if (args[0] == "send" && args.size() == 5 && args[2].toInt(&ok) && ok && args[3].toDouble(&ok) && ok)
         {
             if (token.isNull())
             {
@@ -419,10 +421,29 @@ int main()
                 continue;
             }
 
+            int amount = 0;
+            if (args[2].toInt() != BOOK)
+                amount = ceil(args[3].toDouble()); //向上取整
+            else if (args[3].toInt(&ok) && ok)
+                amount = args[3].toInt();
+            else
+            {
+                qInfo() << "图书只支持整本寄出";
+                continue;
+            }
+
+            if (amount <= 0)
+            {
+                qInfo() << "数量必须为正数";
+                continue;
+            }
+
             QJsonObject info;
             info.insert("dstName", args[1]);
-            info.insert("description", args[2]);
-            QString ret = userManage.addItem(token.toObject(), info);
+            info.insert("type", args[2].toInt());
+            info.insert("amount", amount);
+            info.insert("description", args[4]);
+            QString ret = userManage.sendItem(token.toObject(), info);
             if (ret.isEmpty())
                 qInfo() << "物品添加成功";
             else

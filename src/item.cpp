@@ -20,6 +20,7 @@ ItemManage::ItemManage(Database *_db) : db(_db)
 int ItemManage::insertItem(
     const int cost,
     const int state,
+    const int type,
     const Time &sendingTime,
     const Time &receivingTime,
     const QString &srcName,
@@ -27,7 +28,7 @@ int ItemManage::insertItem(
     const QString &description)
 {
     qDebug() << "添加物品 ";
-    db->insertItem(++total, cost, state, sendingTime, receivingTime, srcName, dstName, description);
+    db->insertItem(++total, cost, state, type, sendingTime, receivingTime, srcName, dstName, description);
     return total;
 }
 
@@ -37,7 +38,7 @@ int ItemManage::queryAll(QList<QSharedPointer<Item>> &result) const
     return db->queryItemByFilter(result, -1, Time(-1, -1, -1), Time(-1, -1, -1), "", "");
 }
 
-int ItemManage::queryByFilter(QList<QSharedPointer<Item>> &result,const  int id, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName) const
+int ItemManage::queryByFilter(QList<QSharedPointer<Item>> &result, const int id, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName) const
 {
     qDebug() << "按条件查询";
     return db->queryItemByFilter(result, id, sendingTime, receivingTime, srcName, dstName);

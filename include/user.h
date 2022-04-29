@@ -19,14 +19,21 @@
 #ifndef USER_H
 #define USER_H
 
+#define DEBUG
+
 #include "database.h"
 #include "item.h"
 #include "time.h"
 
 extern const int CUSTOMER;
 extern const int ADMINISTRATOR;
+
 extern const int RECEIVED;          //已签收
 extern const int PENDING_REVEICING; //待签收
+
+extern const int FRAGILE; //易碎物
+extern const int BOOK;    //图书
+extern const int NORMAL;  //普通快递
 
 /**
  * @brief 用户基类
@@ -53,7 +60,23 @@ public:
      * @param _phoneNumber 电话号码
      * @param _address 地址
      */
-    User(const QString &_username, const QString &_password, int _balance, const QString &_name, const QString &_phoneNumber, const QString &_address) : username(_username), password(_password), balance(_balance), type(-1), name(_name), phoneNumber(_phoneNumber), address(_address){};
+    User(const QString &_username, const QString &_password, int _balance, const QString &_name, const QString &_phoneNumber, const QString &_address) : username(_username), password(_password), balance(_balance), type(-1), name(_name), phoneNumber(_phoneNumber), address(_address)
+    {
+#ifdef DEBUG
+        qDebug() << "构造user";
+#endif
+    }
+
+    /**
+     * @brief 析构函数
+     * @note 虚函数
+     */
+    virtual ~User()
+    {
+#ifdef DEBUG
+        qDebug() << "析构user";
+#endif
+    };
 
     /**
      * @brief 获得用户名
@@ -102,8 +125,6 @@ public:
      * @param addend 余额增量
      */
     void addBalance(int addend) { balance += addend; }
-
-    virtual ~User() = default;
 
 protected:
     QString username;    //用户名
@@ -336,14 +357,13 @@ public:
      * @note 物品信息格式:
      * ```json
      * {
-     *      "sendingTime_Year" : <整数>,
-     *      "sendingTime_Month" : <整数>,
-     *      "sendingTime_Day" : <整数>,
      *      "dstName" : <字符串>
+     *      "type" : <整数>
+     *      "amount" : <整数>
      *      "description" : <字符串>
      * }
      */
-    QString addItem(const QJsonObject &token, const QJsonObject &info) const;
+    QString sendItem(const QJsonObject &token, const QJsonObject &info) const;
 
     /**
      * @brief 发送快递物品

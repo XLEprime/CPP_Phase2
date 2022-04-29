@@ -128,6 +128,7 @@ QString UserManage::queryItem(const QJsonObject &token, const QJsonObject &filte
         QJsonObject itemJson;
         itemJson.insert("id", item->getId());
         itemJson.insert("cost", item->getCost());
+        itemJson.insert("type", item->getType());
         itemJson.insert("state", item->getState());
         itemJson.insert("sendingTime_Year", item->getSendingTime().year);
         itemJson.insert("sendingTime_Month", item->getSendingTime().month);
@@ -251,7 +252,7 @@ QString UserManage::queryAllUserInfo(const QJsonObject &token, QJsonArray &ret) 
     return {};
 }
 
-QString UserManage::addItem(const QJsonObject &token, const QJsonObject &info) const
+QString UserManage::sendItem(const QJsonObject &token, const QJsonObject &info) const
 {
     QString username = verify(token);
     if (username.isEmpty())
@@ -259,7 +260,7 @@ QString UserManage::addItem(const QJsonObject &token, const QJsonObject &info) c
     if (userMap[username]->getUserType() != CUSTOMER)
         return "非用户不能发出快递";
 
-    if (!info.contains("dstName") || !info.contains("description"))
+    if (!info.contains("dstName") || !info.contains("type") || !info.contains("amount") || !info.contains("description"))
         return "快递物品信息不全";
 
     if (!db->queryUserByName(info["dstName"].toString()))
@@ -275,12 +276,28 @@ QString UserManage::addItem(const QJsonObject &token, const QJsonObject &info) c
     if (retType != CUSTOMER)
         return "你只能给用户寄出快递";
 
-    QString ret = transferBalance(token, 15, "ADMINISTRATOR");
+    int cost = 0;
+    switch (info["type"].toInt())
+    {
+    case FRAGILE:
+        cost = info["amount"].toInt() * FRAGILE_ITEM_PRICE;
+        break;
+    case BOOK:
+        cost = info["amount"].toInt() * BOOK_PRICE;
+        break;
+    case NORMAL:
+        cost = info["amount"].toInt() * NORMAL_ITEM_PRICE;
+        break;
+    default:
+        return "快递类型有误";
+    }
+
+    QString ret = transferBalance(token, cost, "ADMINISTRATOR");
     if (!ret.isEmpty())
         return ret;
 
     Time sendingTime(Time::getCurYear(), Time::getCurMonth(), Time::getCurDay());
-    int id = itemManage->insertItem(15, PENDING_REVEICING, sendingTime, Time(-1, -1, -1), username, info["dstName"].toString(), info["description"].toString());
+    int id = itemManage->insertItem(cost, info["type"].toInt(), PENDING_REVEICING, sendingTime, Time(-1, -1, -1), username, info["dstName"].toString(), info["description"].toString());
     qDebug() << "添加快递单号为" << id;
 
     return {};
