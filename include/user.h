@@ -184,7 +184,7 @@ public:
      * @return int 返回UserType
      * @note 1为CUSTOMER 2为ADMINISTRATOR
      */
-    int getUserType() const override { return CUSTOMER; }
+    int getUserType() const override { return type; }
 };
 
 /**
@@ -230,7 +230,7 @@ public:
      * @return int 返回UserType
      * @note 0为CUSTOMER 1为ADMINISTRATOR
      */
-    int getUserType() const override { return ADMINISTRATOR; }
+    int getUserType() const override { return type; }
 
     // /**
     //  * @brief 查询所有用户
@@ -284,7 +284,7 @@ public:
      * @return int 返回UserType
      * @note 1为CUSTOMER 2为ADMINISTRATOR 3为EXPRESSMAN
      */
-    int getUserType() const override { return ADMINISTRATOR; }
+    int getUserType() const override { return type; }
 };
 
 /**
@@ -304,6 +304,7 @@ public:
     /**
      * @brief 注册
      *
+     * @param token 凭据
      * @param username 用户名
      * @param password 密码
      * @param type 注册的账号类型 0为CUSTOMER, 2为EXPRESSMAN(Phase2开始出现)
@@ -314,7 +315,18 @@ public:
      * @note ADMINISTRATOR不用支持注册.
      * @note register是关键字，不能作为函数名.
      */
-    QString registerUser(const QString &username, const QString &password, int type, const QString &name, const QString &phoneNumber, const QString &address) const;
+    QString registerUser(const QJsonObject &token, const QString &username, const QString &password, int type, const QString &name, const QString &phoneNumber, const QString &address) const;
+
+    /**
+     * @brief 删除
+     *
+     * @param token 凭据
+     * @param username 用户名
+     * @return QString 如果删除成功，返回空串，否则返回错误信息.
+     * @note 只有EXPRESSMAN支持删除
+     * @note 只有ADMINISTRATOR有权限删除EXPRESSMAN
+     */
+    QString deleteExpressman(const QJsonObject &token, const QString &username) const;
 
     /**
      * @brief 登录

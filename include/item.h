@@ -22,8 +22,8 @@
 #include "time.h"
 
 const int PENDING_COLLECTING = 1; //待揽收
-const int PENDING_REVEICING = 2; //待签收
-const int RECEIVED = 3;          //已签收
+const int PENDING_REVEICING = 2;  //待签收
+const int RECEIVED = 3;           //已签收
 
 const int FRAGILE = 1; //易碎物
 const int BOOK = 2;    //图书
@@ -57,10 +57,11 @@ public:
      * @param _receivingTime 接收时间
      * @param _srcName 寄件用户的用户名
      * @param _dstName 收件用户的用户名
+     * @param _expressman 快递员
      * @param _description 物品描述
      * @note 注意是否使用std::move
      */
-    Item(int _id, int _cost, int _state, Time _sendingTime, Time _receivingTime, QString _srcName, QString _dstName, QString _description) : id(_id), cost(_cost), state(_state), sendingTime(_sendingTime), receivingTime(_receivingTime), srcName(_srcName), dstName(_dstName), description(_description)
+    Item(int _id, int _cost, int _state, Time _sendingTime, Time _receivingTime, QString _srcName, QString _dstName, QString _expressman, QString _description) : id(_id), cost(_cost), state(_state), sendingTime(_sendingTime), receivingTime(_receivingTime), srcName(_srcName), dstName(_dstName), expressman(_expressman), description(_description)
     {
 #ifdef DEBUG
         qDebug() << "构造item";
@@ -134,7 +135,7 @@ public:
      */
     const QString &getDescription() const { return description; }
 
-        /**
+    /**
      * @brief 插入快递信息到数据库中
      * @param db 数据库
      */
@@ -149,6 +150,7 @@ protected:
     Time receivingTime;  //接收时间
     QString srcName;     //寄件用户的用户名
     QString dstName;     //收件用户的用户名
+    QString expressman;  //快递员
     QString description; //物品描述
 };
 
@@ -167,10 +169,11 @@ public:
      * @param _receivingTime 接收时间
      * @param _srcName 寄件用户的用户名
      * @param _dstName 收件用户的用户名
+     * @param _expressman 快递员
      * @param _description 物品描述
      * @note 注意是否使用std::move
      */
-    FragileItem(int _id, int _cost, int _state, Time _sendingTime, Time _receivingTime, QString _srcName, QString _dstName, QString _description) : Item(_id, _cost, _state, _sendingTime, _receivingTime, _srcName, _dstName, _description) { type = FRAGILE; };
+    FragileItem(int _id, int _cost, int _state, Time _sendingTime, Time _receivingTime, QString _srcName, QString _dstName, QString _expressman, QString _description) : Item(_id, _cost, _state, _sendingTime, _receivingTime, _srcName, _dstName, _expressman, _description) { type = FRAGILE; };
 
     /**
      * @brief 默认析构函数
@@ -200,10 +203,11 @@ public:
      * @param _receivingTime 接收时间
      * @param _srcName 寄件用户的用户名
      * @param _dstName 收件用户的用户名
+     * @param _expressman 快递员
      * @param _description 物品描述
      * @note 注意是否使用std::move
      */
-    Book(int _id, int _cost, int _state, Time _sendingTime, Time _receivingTime, QString _srcName, QString _dstName, QString _description) : Item(_id, _cost, _state, _sendingTime, _receivingTime, _srcName, _dstName, _description) { type = BOOK; };
+    Book(int _id, int _cost, int _state, Time _sendingTime, Time _receivingTime, QString _srcName, QString _dstName, QString _expressman, QString _description) : Item(_id, _cost, _state, _sendingTime, _receivingTime, _srcName, _dstName, _expressman, _description) { type = BOOK; };
 
     /**
      * @brief 默认析构函数
@@ -233,10 +237,11 @@ public:
      * @param _receivingTime 接收时间
      * @param _srcName 寄件用户的用户名
      * @param _dstName 收件用户的用户名
+     * @param _expressman 快递员
      * @param _description 物品描述
      * @note 注意是否使用std::move
      */
-    NormalItem(int _id, int _cost, int _state, Time _sendingTime, Time _receivingTime, QString _srcName, QString _dstName, QString _description) : Item(_id, _cost, _state, _sendingTime, _receivingTime, _srcName, _dstName, _description) { type = NORMAL; };
+    NormalItem(int _id, int _cost, int _state, Time _sendingTime, Time _receivingTime, QString _srcName, QString _dstName, QString _expressman, QString _description) : Item(_id, _cost, _state, _sendingTime, _receivingTime, _srcName, _dstName, _expressman, _description) { type = NORMAL; };
 
     /**
      * @brief 默认析构函数
@@ -292,6 +297,7 @@ public:
         const Time &receivingTime,
         const QString &srcName,
         const QString &dstName,
+        const QString &expressman,
         const QString &description);
 
     /**
@@ -309,9 +315,10 @@ public:
      * @param receivingTime 接收时间
      * @param srcName 寄件用户的用户名
      * @param dstName 收件用户的用户名
+     * @param expressman 快递员的用户名
      * @return int 查到符合条件的数量
      */
-    int queryByFilter(QList<QSharedPointer<Item>> &result, const int id = -1, const Time &sendingTime = Time(-1, -1, -1), const Time &receivingTime = Time(-1, -1, -1), const QString &srcName = "", const QString &dstName = "") const;
+    int queryByFilter(QList<QSharedPointer<Item>> &result, const int id = -1, const Time &sendingTime = Time(-1, -1, -1), const Time &receivingTime = Time(-1, -1, -1), const QString &srcName = "", const QString &dstName = "", const QString &expressman = "") const;
 
     /**
      * @brief 根据条件查询物品

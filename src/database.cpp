@@ -73,6 +73,7 @@ Database::Database(const QString &connectionName, const QString &fileName) : use
                          "receivingTime_Day INT NOT NULL,"
                          "srcName TEXT NOT NULL,"
                          "dstName TEXT NOT NULL,"
+                         "expressman TEXT NOT NULL,"
                          "description TEXT NOT NULL) ");
 
         exec(sqlQuery);
@@ -290,7 +291,7 @@ int Database::getDBMaxId(const QString &tableName) const
     }
 }
 
-void Database::insertItem(int id, int cost, int type, int state, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName, const QString &description)
+void Database::insertItem(int id, int cost, int type, int state, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName, const QString &expressman, const QString &description)
 {
     QSqlQuery sqlQuery(db);
     sqlQuery.prepare("INSERT INTO item VALUES(:id, :cost, :type, :state,"
@@ -309,6 +310,7 @@ void Database::insertItem(int id, int cost, int type, int state, const Time &sen
     sqlQuery.bindValue(":receivingTime_Day", receivingTime.day);
     sqlQuery.bindValue(":srcName", srcName);
     sqlQuery.bindValue(":dstName", dstName);
+    sqlQuery.bindValue(":expressman", expressman);
     sqlQuery.bindValue(":description", description);
     exec(sqlQuery);
     if (!sqlQuery.exec())
@@ -345,13 +347,13 @@ QSharedPointer<Item> Database::query2Item(const QSqlQuery &sqlQuery) const
     switch (sqlQuery.value(2).toInt())
     {
     case FRAGILE:
-        result = QSharedPointer<FragileItem>::create(sqlQuery.value(0).toInt(), sqlQuery.value(1).toInt(), sqlQuery.value(3).toInt(), sendingTime, receivingTime, sqlQuery.value(10).toString(), sqlQuery.value(11).toString(), sqlQuery.value(12).toString());
+        result = QSharedPointer<FragileItem>::create(sqlQuery.value(0).toInt(), sqlQuery.value(1).toInt(), sqlQuery.value(3).toInt(), sendingTime, receivingTime, sqlQuery.value(10).toString(), sqlQuery.value(11).toString(), sqlQuery.value(12).toString(), sqlQuery.value(13).toString());
         break;
     case BOOK:
-        result = QSharedPointer<Book>::create(sqlQuery.value(0).toInt(), sqlQuery.value(1).toInt(), sqlQuery.value(3).toInt(), sendingTime, receivingTime, sqlQuery.value(10).toString(), sqlQuery.value(11).toString(), sqlQuery.value(12).toString());
+        result = QSharedPointer<Book>::create(sqlQuery.value(0).toInt(), sqlQuery.value(1).toInt(), sqlQuery.value(3).toInt(), sendingTime, receivingTime, sqlQuery.value(10).toString(), sqlQuery.value(11).toString(), sqlQuery.value(12).toString(), sqlQuery.value(13).toString());
         break;
     case NORMAL:
-        result = QSharedPointer<NormalItem>::create(sqlQuery.value(0).toInt(), sqlQuery.value(1).toInt(), sqlQuery.value(3).toInt(), sendingTime, receivingTime, sqlQuery.value(10).toString(), sqlQuery.value(11).toString(), sqlQuery.value(12).toString());
+        result = QSharedPointer<NormalItem>::create(sqlQuery.value(0).toInt(), sqlQuery.value(1).toInt(), sqlQuery.value(3).toInt(), sendingTime, receivingTime, sqlQuery.value(10).toString(), sqlQuery.value(11).toString(), sqlQuery.value(12).toString(), sqlQuery.value(13).toString());
         break;
     }
 
@@ -382,7 +384,7 @@ int Database::queryAllUser(QList<QSharedPointer<User>> &result)
     }
 }
 
-int Database::queryItemByFilter(QList<QSharedPointer<Item>> &result, int id, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName) const
+int Database::queryItemByFilter(QList<QSharedPointer<Item>> &result, int id, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &expressman, const QString &dstName) const
 {
     QSqlQuery sqlQuery(db);
     QString queryString("SELECT * FROM item");
@@ -416,6 +418,11 @@ int Database::queryItemByFilter(QList<QSharedPointer<Item>> &result, int id, con
         queryString += QString(flag ? " AND " : " WHERE ") + "dstName = :dstName";
         flag = true;
     }
+    if (!expressman.isEmpty())
+    {
+        queryString += QString(flag ? " AND " : " WHERE ") + "expressman = :expressman";
+        flag = true;
+    }
     sqlQuery.prepare(queryString);
 
     if (id != -1)
@@ -436,6 +443,8 @@ int Database::queryItemByFilter(QList<QSharedPointer<Item>> &result, int id, con
         sqlQuery.bindValue(":srcName", srcName);
     if (!dstName.isEmpty())
         sqlQuery.bindValue(":dstName", dstName);
+    if (!expressman.isEmpty())
+        sqlQuery.bindValue(":expressman", expressman);
 
     exec(sqlQuery);
     if (!sqlQuery.exec())
@@ -461,6 +470,11 @@ bool Database::modifyItemState(const int id, const int state)
     return modifyData("item", QString::number(id), "state", state);
 }
 
+bool Database::modifyItemExpressman(const int id, const QString &expressman)
+{
+    return modifyData("item", QString::number(id), "expressman", expressman);
+}
+
 bool Database::modifyItemReceivingTime(const int id, const Time receivingTime)
 {
     bool flag1 = false, flag2 = false, flag3 = false;
@@ -484,6 +498,24 @@ bool Database::deleteItem(const int id) const
     else
     {
         qDebug() << "数据库删除id为 " << id << " 的项成功";
+        return false;
+    }
+}
+
+bool Database::deleteUser(const QString username) const
+{
+    QSqlQuery sqlQuery(db);
+    sqlQuery.prepare("DELETE FROM user WHERE username = :username");
+    sqlQuery.bindValue(":username", username);
+    exec(sqlQuery);
+    if (!sqlQuery.exec())
+    {
+        qCritical() << "数据库删除username为 " << username << " 的项失败";
+        return true;
+    }
+    else
+    {
+        qDebug() << "数据库删除username为 " << username << " 的项成功";
         return false;
     }
 }

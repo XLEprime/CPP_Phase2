@@ -129,9 +129,10 @@ public:
      * @param receivingTime 接收时间
      * @param srcName 寄件用户的用户名
      * @param dstName 收件用户的用户名
+     * @param expressman 快递员
      * @param description 物品描述
      */
-    void insertItem(int id, int cost, int type, int state, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName, const QString &description);
+    void insertItem(int id, int cost, int type, int state, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName, const QString &expressman, const QString &description);
 
     /**
      * @brief 将数据库的User查询结果转换成指向User的指针
@@ -162,9 +163,10 @@ public:
      * @param receivingTime 接收时间
      * @param srcName 寄件用户的用户名
      * @param dstName 收件用户的用户名
+     * @param expressman
      * @return int 查到符合条件的数量
      */
-    int queryItemByFilter(QList<QSharedPointer<Item>> &result, int id, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName) const;
+    int queryItemByFilter(QList<QSharedPointer<Item>> &result, int id, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName, const QString &expressman) const;
 
     /**
      * @brief 修改物品状态
@@ -174,6 +176,15 @@ public:
      * @return false 修改失败
      */
     bool modifyItemState(const int id, const int state);
+
+    /**
+     * @brief 修改物品的快递员
+     * @param id 物品单号
+     * @param expressman 快递员的用户名
+     * @return true 修改成功
+     * @return false 修改失败
+     */
+    bool modifyItemExpressman(const int id, const QString &expressman);
 
     /**
      * @brief 修改物品接收时间
@@ -191,6 +202,14 @@ public:
      * @return false 删除失败
      */
     bool deleteItem(const int id) const;
+
+    /**
+     * @brief 删除用户
+     * @param username 用户名
+     * @return true 删除成功
+     * @return false 删除失败
+     */
+    bool deleteUser(const QString username) const;
 
 private:
     QSqlDatabase db;    // SQLite数据库

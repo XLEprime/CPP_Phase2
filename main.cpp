@@ -58,7 +58,7 @@ int main()
 
     QJsonValue token(QJsonValue::Null);
 
-    QVector<QString> userType{"", "CUSTOMER", "ADMINISTRATOR"};
+    QVector<QString> userType{"", "CUSTOMER", "ADMINISTRATOR", "EXPRESSMAN"};
     QVector<QString> itemState{"", "待揽收", "待签收", "已签收"};
     QVector<QString> itemType{"", "易碎品", "图书", "普通快递"};
     QString input;
@@ -83,6 +83,10 @@ int main()
             qInfo() << "修改密码: changepassword <新密码>";
             qInfo() << "查看个人信息: info";
             qInfo() << "查看所有用户信息: alluserinfo";
+            qInfo() << "    注意此功能仅限管理员使用。";
+            qInfo() << "添加快递员: addexpressman <用户名> <密码> <姓名> <电话号码> <地址>";
+            qInfo() << "    注意此功能仅限管理员使用。";
+            qInfo() << "删除快递员: deleteexpressman <用户名>";
             qInfo() << "    注意此功能仅限管理员使用。";
             qInfo() << "充值: addbalance <增加量>";
             qInfo() << "查询所有快递: queryallitem";
@@ -118,7 +122,7 @@ int main()
                 qInfo() << "当前已有用户登录，请登出后重试。";
                 continue;
             }
-            QString ret = userManage.registerUser(args[1], args[2], CUSTOMER, args[3], args[4], args[5]);
+            QString ret = userManage.registerUser(token.toObject(), args[1], args[2], CUSTOMER, args[3], args[4], args[5]);
             if (ret.isEmpty())
                 qInfo() << "用户 " << args[1] << " 注册成功";
             else
@@ -212,6 +216,28 @@ int main()
             }
             else
                 qInfo() << "查询失败" << ret;
+        }
+        else if (args[0] == "addexpressman" && args.size() == 6)
+        {
+            if (token.isNull())
+            {
+                qInfo() << "当前没有用户登录，请登录后重试。";
+                continue;
+            }
+            QString ret = userManage.registerUser(token.toObject(), args[1], args[2], EXPRESSMAN, args[3], args[4], args[5]);
+            if (ret.isEmpty())
+                qInfo() << "用户 " << args[1] << " 注册成功";
+            else
+                qInfo() << "用户 " << args[1] << " 注册失败" << ret;
+        }
+        else if (args[0] == "deleteexpressman" && args.size() == 2)
+        {
+            if (token.isNull())
+            {
+                qInfo() << "当前没有用户登录，请登录后重试。";
+                continue;
+            }
+            userManage.deleteExpressman(token.toObject(), args[1]);
         }
         else if (args[0] == "addbalance" && args.size() == 2)
         {
@@ -465,7 +491,10 @@ int main()
                 qInfo() << "物品接收失败" << ret;
         }
         else if (args[0] == "exit" && args.size() == 1)
+        {
+            userManage.logout(token.toObject());
             break;
+        }
         else
             qInfo() << "指令输入有误，请输入help查看帮助";
     }

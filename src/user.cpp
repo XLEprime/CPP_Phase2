@@ -34,7 +34,7 @@ QString UserManage::verify(const QJsonObject &token) const
     }
     else
     {
-        qDebug() << "用户 " << token["username"].toString() << " 验证成功";
+        qDebug() << "用户 " << token["username"].toString() << " 验证成功，类型为" << userMap[token["username"].toString()]->getUserType();
         return token["username"].toString();
     }
 }
@@ -90,11 +90,12 @@ QString UserManage::queryItem(const QJsonObject &token, const QJsonObject &filte
     if (!filter.contains("type"))
         return "缺少type键";
     int cnt;
-    QList<QSharedPointer<Item>> result;
-    QString username = verify(token);
 
+    QString username = verify(token);
     if (filter["type"].toInt() == 0 && userMap[username]->getUserType() != ADMINISTRATOR)
         return "非管理员不能查看所有物品";
+
+    QList<QSharedPointer<Item>> result;
 
     int id = -1;
     Time sendingTime(-1, -1, -1), receivingTime(-1, -1, -1);
@@ -155,20 +156,48 @@ QString UserManage::queryItem(const QJsonObject &token, const QJsonObject &filte
     return {};
 }
 
-QString UserManage::registerUser(const QString &username, const QString &password, int type, const QString &name, const QString &phoneNumber, const QString &address) const
+QString UserManage::registerUser(const QJsonObject &token, const QString &username, const QString &password, int type, const QString &name, const QString &phoneNumber, const QString &address) const
 {
     if (username.isEmpty() || username.size() > 10)
         return "用户名长度应该在1~10之间";
     if (db->queryUserByName(username))
         return "该用户名已被注册";
-    if (type == ADMINISTRATOR)
-        return "管理员类不支持注册";
 
-    QSharedPointer<User> user = QSharedPointer<Customer>::create(username, password, 0, name, phoneNumber, address);
+    QSharedPointer<User> user;
+    switch (type)
+    {
+    case CUSTOMER:
+        user = QSharedPointer<Customer>::create(username, password, 0, name, phoneNumber, address);
+        break;
+    case ADMINISTRATOR:
+        return "管理员类不支持注册";
+        break;
+    case EXPRESSMAN:
+        if (verify(token).isEmpty() || userMap[verify(token)]->getUserType() != ADMINISTRATOR)
+            return "只有管理员类才能注册快递员";
+        user = QSharedPointer<Expressman>::create(username, password, 0, name, phoneNumber, address);
+        break;
+    }
+
     user->insertInfo2DB(db);
 
-    qDebug() << "用户 " << username << " 注册成功";
+    qDebug() << username << " 注册成功";
     return {};
+}
+
+QString UserManage::deleteExpressman(const QJsonObject &token, const QString &expressmanName) const
+{
+    QString username = verify(token);
+    if (userMap[username]->getUserType() != ADMINISTRATOR)
+        return "非管理员不能删除快递员";
+
+    if (!db->queryUserByName(expressmanName))
+        return "该快递员不存在";
+
+    if (db->deleteUser(expressmanName))
+        return "";
+    else
+        return "删除失败";
 }
 
 QString UserManage::login(const QString &username, const QString &password, QJsonObject &token)
@@ -313,7 +342,7 @@ QString UserManage::sendItem(const QJsonObject &token, const QJsonObject &info) 
         return ret;
 
     Time sendingTime(Time::getCurYear(), Time::getCurMonth(), Time::getCurDay());
-    int id = itemManage->insertItem(cost, info["type"].toInt(), PENDING_REVEICING, sendingTime, Time(-1, -1, -1), username, info["dstName"].toString(), info["description"].toString());
+    int id = itemManage->insertItem(cost, info["type"].toInt(), PENDING_REVEICING, sendingTime, Time(-1, -1, -1), username, info["dstName"].toString(), info["expressman"].toString(), info["description"].toString());
     qDebug() << "添加快递单号为" << id;
     ret = QString::number(cost);
     return ret;
