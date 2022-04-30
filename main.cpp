@@ -58,8 +58,8 @@ int main()
 
     QJsonValue token(QJsonValue::Null);
 
-    QVector<QString> userType{"CUSTOMER", "ADMINISTRATOR"};
-    QVector<QString> itemState{"", "已签收", "待签收"};
+    QVector<QString> userType{"", "CUSTOMER", "ADMINISTRATOR"};
+    QVector<QString> itemState{"", "待揽收", "待签收", "已签收"};
     QVector<QString> itemType{"", "易碎品", "图书", "普通快递"};
     QString input;
     Time::init();
@@ -118,7 +118,7 @@ int main()
                 qInfo() << "当前已有用户登录，请登出后重试。";
                 continue;
             }
-            QString ret = userManage.registerUser(args[1], args[2], 0, args[3], args[4], args[5]);
+            QString ret = userManage.registerUser(args[1], args[2], CUSTOMER, args[3], args[4], args[5]);
             if (ret.isEmpty())
                 qInfo() << "用户 " << args[1] << " 注册成功";
             else
@@ -447,7 +447,7 @@ int main()
             if (ret.toInt(&ok) && ok)
                 qInfo() << "快递发送成功，共花费" << ret.toInt() << "元";
             else
-                qInfo() << "快递发送失败" << ret.toInt();
+                qInfo() << "快递发送失败" << ret;
         }
         else if (args[0] == "receive" && args.size() == 2 && args[1].toInt(&ok) && ok)
         {

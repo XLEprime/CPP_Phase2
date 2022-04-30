@@ -22,11 +22,11 @@
 #define DEBUG
 
 #include "database.h"
-#include "item.h"
 #include "time.h"
 
-extern const int CUSTOMER;
-extern const int ADMINISTRATOR;
+const int CUSTOMER = 1;
+const int ADMINISTRATOR = 2;
+const int EXPRESSMAN = 3;
 
 extern const int RECEIVED;          //已签收
 extern const int PENDING_REVEICING; //待签收
@@ -126,6 +126,12 @@ public:
      */
     void addBalance(int addend) { balance += addend; }
 
+    /**
+     * @brief 插入用户信息到数据库中
+     * @param db 数据库
+     */
+    void insertInfo2DB(Database *db);
+
 protected:
     QString username;    //用户名
     QString password;    //用户密码
@@ -154,7 +160,24 @@ public:
      * @param _phoneNumber 电话号码
      * @param _address 地址
      */
-    Customer(const QString &_username, const QString &_password, int _balance, const QString &_name, const QString &_phoneNumber, const QString &_address) : User(_username, _password, _balance, _name, _phoneNumber, _address) { type = CUSTOMER; }
+    Customer(const QString &_username, const QString &_password, int _balance, const QString &_name, const QString &_phoneNumber, const QString &_address) : User(_username, _password, _balance, _name, _phoneNumber, _address)
+    {
+        type = CUSTOMER;
+#ifdef DEBUG
+        qDebug() << "构造Customer";
+#endif
+    }
+
+    /**
+     * @brief 析构函数
+     * @note 虚函数
+     */
+    virtual ~Customer()
+    {
+#ifdef DEBUG
+        qDebug() << "析构Customer";
+#endif
+    };
 
     /**
      * @brief 获得用户类
@@ -183,7 +206,24 @@ public:
      * @param _phoneNumber 电话号码
      * @param _address 地址
      */
-    Administrator(const QString &_username, const QString &_password, int _balance, const QString &_name, const QString &_phoneNumber, const QString &_address) : User(_username, _password, _balance, _name, _phoneNumber, _address) { type = ADMINISTRATOR; }
+    Administrator(const QString &_username, const QString &_password, int _balance, const QString &_name, const QString &_phoneNumber, const QString &_address) : User(_username, _password, _balance, _name, _phoneNumber, _address)
+    {
+        type = ADMINISTRATOR;
+#ifdef DEBUG
+        qDebug() << "构造Administrator";
+#endif
+    }
+
+    /**
+     * @brief 析构函数
+     * @note 虚函数
+     */
+    virtual ~Administrator()
+    {
+#ifdef DEBUG
+        qDebug() << "析构Administrator";
+#endif
+    };
 
     /**
      * @brief 获得用户类
@@ -191,10 +231,64 @@ public:
      * @note 0为CUSTOMER 1为ADMINISTRATOR
      */
     int getUserType() const override { return ADMINISTRATOR; }
+
+    // /**
+    //  * @brief 查询所有用户
+    //  * @param result 用于返回结果
+    //  * @param db 要查询的数据库
+    //  * @return int 查到符合条件的数量
+    //  */
+    // int queryAllUserInfo(QList<QSharedPointer<User>> &result, Database *db) const;
 };
 
 /**
- * @brief 用户管理类, 类似于工厂模式, 对象的创建和对象的使用分离.
+ * @brief 快递员类
+ */
+class Expressman : public User
+{
+public:
+    Expressman() = delete;
+
+    /**
+     * @brief 构造函数
+     *
+     * @param _username 用户名
+     * @param _password 密码
+     * @param _balance 余额
+     * @param _type UserType
+     * @param _name 姓名
+     * @param _phoneNumber 电话号码
+     * @param _address 地址
+     */
+    Expressman(const QString &_username, const QString &_password, int _balance, const QString &_name, const QString &_phoneNumber, const QString &_address) : User(_username, _password, _balance, _name, _phoneNumber, _address)
+    {
+        type = EXPRESSMAN;
+#ifdef DEBUG
+        qDebug() << "构造Expressman";
+#endif
+    }
+
+    /**
+     * @brief 析构函数
+     * @note 虚函数
+     */
+    virtual ~Expressman()
+    {
+#ifdef DEBUG
+        qDebug() << "析构Expressman";
+#endif
+    };
+
+    /**
+     * @brief 获得用户类
+     * @return int 返回UserType
+     * @note 1为CUSTOMER 2为ADMINISTRATOR 3为EXPRESSMAN
+     */
+    int getUserType() const override { return ADMINISTRATOR; }
+};
+
+/**
+ * @brief 用户管理类, 类似于工厂模式, 根据需求不同从工厂中获得对象。
  */
 class UserManage
 {

@@ -12,6 +12,11 @@
 #include "../include/item.h"
 #include "../include/database.h"
 
+void Item::insertInfo2DB(Database *db)
+{
+    db->insertItem(id, cost, type, state, sendingTime, sendingTime, srcName, dstName, description);
+}
+
 ItemManage::ItemManage(Database *_db) : db(_db)
 {
     total = db->getDBMaxId("item");
@@ -28,7 +33,20 @@ int ItemManage::insertItem(
     const QString &description)
 {
     qDebug() << "添加物品 ";
-    db->insertItem(++total, cost, state, type, sendingTime, receivingTime, srcName, dstName, description);
+    QSharedPointer<Item> item;
+    switch (type)
+    {
+    case FRAGILE:
+        item = QSharedPointer<FragileItem>::create(++total, cost, state, sendingTime, receivingTime, srcName, dstName, description);
+        break;
+    case BOOK:
+        item = QSharedPointer<Book>::create(++total, cost, state, sendingTime, receivingTime, srcName, dstName, description);
+        break;
+    case NORMAL:
+        item = QSharedPointer<NormalItem>::create(++total, cost, state, sendingTime, receivingTime, srcName, dstName, description);
+        break;
+    }
+    item->insertInfo2DB(db);
     return total;
 }
 

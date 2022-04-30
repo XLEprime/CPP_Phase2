@@ -317,6 +317,25 @@ void Database::insertItem(int id, int cost, int type, int state, const Time &sen
         qDebug() << "数据库:插入id为 " << id << " 的物品项成功 ";
 }
 
+QSharedPointer<User> Database::query2User(const QSqlQuery &sqlQuery) const
+{
+    QSharedPointer<User> result;
+    switch (sqlQuery.value(2).toInt())
+    {
+    case CUSTOMER:
+        result = QSharedPointer<Customer>::create(sqlQuery.value(0).toString(), sqlQuery.value(1).toString(), sqlQuery.value(3).toInt(), sqlQuery.value(4).toString(), sqlQuery.value(5).toString(), sqlQuery.value(6).toString());
+        break;
+    case ADMINISTRATOR:
+        result = QSharedPointer<Administrator>::create(sqlQuery.value(0).toString(), sqlQuery.value(1).toString(), sqlQuery.value(3).toInt(), sqlQuery.value(4).toString(), sqlQuery.value(5).toString(), sqlQuery.value(6).toString());
+        break;
+    case EXPRESSMAN:
+        result = QSharedPointer<Expressman>::create(sqlQuery.value(0).toString(), sqlQuery.value(1).toString(), sqlQuery.value(3).toInt(), sqlQuery.value(4).toString(), sqlQuery.value(5).toString(), sqlQuery.value(6).toString());
+        break;
+    }
+
+    return result;
+}
+
 QSharedPointer<Item> Database::query2Item(const QSqlQuery &sqlQuery) const
 {
     Time sendingTime{sqlQuery.value(4).toInt(), sqlQuery.value(5).toInt(), sqlQuery.value(6).toInt()};
@@ -337,6 +356,30 @@ QSharedPointer<Item> Database::query2Item(const QSqlQuery &sqlQuery) const
     }
 
     return result;
+}
+
+int Database::queryAllUser(QList<QSharedPointer<User>> &result)
+{
+    QSqlQuery sqlQuery(db);
+    sqlQuery.prepare("SELECT * FROM user");
+
+    exec(sqlQuery);
+    if (!sqlQuery.exec())
+    {
+        qCritical() << "数据库:查找用户失败" << sqlQuery.lastError();
+        return 0;
+    }
+    else
+    {
+        int cnt = 0;
+        while (sqlQuery.next())
+        {
+            result.append(query2User(sqlQuery)); //将查找结果转换为临时User对象
+            cnt++;
+        }
+        qDebug() << "数据库:查找用户成功，共" << cnt << "条";
+        return cnt;
+    }
 }
 
 int Database::queryItemByFilter(QList<QSharedPointer<Item>> &result, int id, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName) const

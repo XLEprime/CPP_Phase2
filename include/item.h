@@ -21,8 +21,9 @@
 #include <QDebug>
 #include "time.h"
 
-const int RECEIVED = 1;          //已签收
+const int PENDING_COLLECTING = 1; //待揽收
 const int PENDING_REVEICING = 2; //待签收
+const int RECEIVED = 3;          //已签收
 
 const int FRAGILE = 1; //易碎物
 const int BOOK = 2;    //图书
@@ -132,6 +133,12 @@ public:
      * @return const QString& 描述信息
      */
     const QString &getDescription() const { return description; }
+
+        /**
+     * @brief 插入快递信息到数据库中
+     * @param db 数据库
+     */
+    void insertInfo2DB(Database *db);
 
 protected:
     int id;              // 物品ID 主键

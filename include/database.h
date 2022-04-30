@@ -19,13 +19,12 @@
 #include <QtSql>
 
 #include "item.h"
+#include "user.h"
 
 class Item;
 class Time;
 class User;
 
-const int CUSTOMER = 0;
-const int ADMINISTRATOR = 1;
 /**
  * @brief 数据库类
  */
@@ -135,11 +134,25 @@ public:
     void insertItem(int id, int cost, int type, int state, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName, const QString &description);
 
     /**
+     * @brief 将数据库的User查询结果转换成指向User的指针
+     * @param sqlQuery User类的查询结果
+     * @return QSharedPointer<User> 一个指向新创建的User类的指针
+     */
+    QSharedPointer<User> query2User(const QSqlQuery &sqlQuery) const;
+
+    /**
      * @brief 将数据库的Item查询结果转换成指向Item的指针
      * @param sqlQuery Item类的查询结果
      * @return QSharedPointer<Item> 一个指向新创建的Item类的指针
      */
     QSharedPointer<Item> query2Item(const QSqlQuery &sqlQuery) const;
+
+    /**
+     * @brief 查询所有用户
+     * @param result 用于返回结果
+     * @return int 查到符合条件的数量
+     */
+    int queryAllUser(QList<QSharedPointer<User>> &result);
 
     /**
      * @brief 根据条件查询物品

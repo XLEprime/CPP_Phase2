@@ -12,6 +12,16 @@
 #include "../include/user.h"
 #include <string>
 
+void User::insertInfo2DB(Database *db)
+{
+    db->insertUser(username, password, type, 0, name, phoneNumber, address);
+}
+
+// int Administrator::queryAllUserInfo(QList<QSharedPointer<User>> &result, Database *db) const
+// {
+//     return db->queryAllUser(result);
+// }
+
 QString UserManage::verify(const QJsonObject &token) const
 {
     if (!token.contains("username") ||
@@ -59,11 +69,11 @@ QString UserManage::transferBalance(const QJsonObject &token, int balance, const
         return "无法查到另一个用户" + dstUser;
 
     int dstBalance = db->queryBalanceByName(dstUser);
-    if (dstUser + balance >= (int)1e9)
-        return "余额不能大于1000000000";
+    if (dstBalance + balance >= (int)1e9)
+        return "对方余额不能大于1000000000";
 
-    if (dstUser + balance < 0)
-        return "余额不能为负";
+    if (dstBalance + balance < 0)
+        return "对方余额不能小于0";
 
     QString ret = addBalance(token, -balance);
     if (!ret.isEmpty())
@@ -153,7 +163,10 @@ QString UserManage::registerUser(const QString &username, const QString &passwor
         return "该用户名已被注册";
     if (type == ADMINISTRATOR)
         return "管理员类不支持注册";
-    db->insertUser(username, password, type, 0, name, phoneNumber, address);
+
+    QSharedPointer<User> user = QSharedPointer<Customer>::create(username, password, 0, name, phoneNumber, address);
+    user->insertInfo2DB(db);
+
     qDebug() << "用户 " << username << " 注册成功";
     return {};
 }
@@ -177,6 +190,10 @@ QString UserManage::login(const QString &username, const QString &password, QJso
         case ADMINISTRATOR:
             if (!userMap[username])
                 userMap[username] = QSharedPointer<Administrator>::create(username, retPassword, retBalance, retName, retPhoneNumber, retAddress);
+            break;
+        case EXPRESSMAN:
+            if (!userMap[username])
+                userMap[username] = QSharedPointer<Expressman>::create(username, retPassword, retBalance, retName, retPhoneNumber, retAddress);
             break;
         default:
             return "数据库中用户类型错误";
@@ -232,22 +249,20 @@ QString UserManage::queryAllUserInfo(const QJsonObject &token, QJsonArray &ret) 
         return "验证失败";
     if (userMap[username]->getUserType() != ADMINISTRATOR)
         return "非管理员不能查看所有用户信息";
-    for (QString username : db->usernameSet)
+
+    QList<QSharedPointer<User>> result;
+
+    db->queryAllUser(result);
+
+    for (const QSharedPointer<User> &user : result)
     {
-        QString retPassword;
-        int retType;
-        int retBalance;
-        QString retName;
-        QString retPhoneNumber;
-        QString retAddress;
-        db->queryUserByName(username, retPassword, retType, retBalance, retName, retPhoneNumber, retAddress);
         QJsonObject itemJson;
-        itemJson.insert("username", username);
-        itemJson.insert("type", retType);
-        itemJson.insert("balance", retBalance);
-        itemJson.insert("name", retName);
-        itemJson.insert("phonenumber", retPhoneNumber);
-        itemJson.insert("address", retAddress);
+        itemJson.insert("username", user->getUsername());
+        itemJson.insert("type", user->getUserType());
+        itemJson.insert("balance", user->getBalance());
+        itemJson.insert("name", user->getName());
+        itemJson.insert("phonenumber", user->getPhoneNumber());
+        itemJson.insert("address", user->getAddress());
         ret.append(itemJson);
     }
     return {};
