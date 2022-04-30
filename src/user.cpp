@@ -335,7 +335,7 @@ QString UserManage::receiveItem(const QJsonObject &token, const QJsonObject &inf
         return "不存在运单号为该ID的物品";
     if (result->getDstName() != username)
         return "这不是您的快递";
-    if (!result->getSendingTime().isDue())
+    if (result->getState() != PENDING_REVEICING)
         return {"该快递还未到达"};
 
     itemManage->modifyState(info["id"].toInt(), RECEIVED);
