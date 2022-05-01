@@ -373,6 +373,10 @@ QString UserManage::deliveryItem(const QJsonObject &token, const QJsonObject &in
     if (result->getExpressman() != username)
         return "这不是你所属的快递";
 
+    QString ret = transferBalance(token, -(result->getCost() / 2), "admin");
+    if (!ret.isEmpty())
+        return ret;
+
     if (itemManage->modifyState(info["itemId"].toInt(), PENDING_REVEICING))
         return {};
     else
