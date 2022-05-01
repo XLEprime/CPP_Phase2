@@ -421,7 +421,8 @@ public:
      *      可选："receivingTime_Year" : <整数>,
      *      可选："receivingTime_Month" : <整数>,
      *      可选："receivingTime_Day" : <整数>,
-     *      可选："dstName" : <字符串>
+     *      可选："dstName" : <字符串>,
+     *      可选: "expressman" : <字符串>
      * }
      * ```
      * 2. 按条件查询该用户发出的所有物品
@@ -435,7 +436,9 @@ public:
      *      可选："receivingTime_Year" : <整数>,
      *      可选："receivingTime_Month" : <整数>,
      *      可选："receivingTime_Day" : <整数>,
-     *      可选："dstName" : <字符串>
+     *      可选："dstName" : <字符串>,
+     *      可选: "expressman" : <字符串>
+     *
      * }
      * ```
      * 2. 按条件查询该用户将收到的所有物品
@@ -449,7 +452,24 @@ public:
      *      可选："receivingTime_Year" : <整数>,
      *      可选："receivingTime_Month" : <整数>,
      *      可选："receivingTime_Day" : <整数>,
-     *      可选："srcName" : <字符串>
+     *      可选："srcName" : <字符串>,
+     *      可选: "expressman" : <字符串>
+     *
+     * }
+     * ```
+     * 3. 按条件查询快递员所属的所有物品
+     * ```json
+     * {
+     *      "type": 3,
+     *      可选："id" : <整数>,
+     *      可选："sendingTime_Year" : <整数>,
+     *      可选："sendingTime_Month" : <整数>,
+     *      可选："sendingTime_Day" : <整数>,
+     *      可选："receivingTime_Year" : <整数>,
+     *      可选："receivingTime_Month" : <整数>,
+     *      可选："receivingTime_Day" : <整数>,
+     *      可选："srcName" : <字符串>,
+     *      可选："dstName" : <字符串>
      * }
      * ```
      */
@@ -472,7 +492,7 @@ public:
     QString sendItem(const QJsonObject &token, const QJsonObject &info) const;
 
     /**
-     * @brief 发送快递物品
+     * @brief 运送快递物品
      * @param token 凭据
      * @param info 快递物品信息
      * @return QString
@@ -482,7 +502,33 @@ public:
      *      "id" : <整数>
      * }
      */
+    QString deliveryItem(const QJsonObject &token, const QJsonObject &info) const;
+
+    /**
+     * @brief 发送快递物品
+     * @param token 凭据
+     * @param info 快递物品信息
+     * @return QString 成功则返回空串，否则返回错误信息
+     * @note 物品信息格式:
+     * ```json
+     * {
+     *      "id" : <整数>
+     * }
+     */
     QString receiveItem(const QJsonObject &token, const QJsonObject &info) const;
+
+    /**
+     * @brief 为快递指定一个快递员
+     * @param token 凭据
+     * @return QString 成功则返回空串，否则返回错误信息
+     * @note 物品信息格式:
+     * ```json
+     * {
+     *      "expressman" : <字符串>,
+     *      "itemId" : <物品单号>
+     * }
+     */
+    QString assignExpressman(const QJsonObject &token, const QJsonObject &info) const;
 
 private:
     QMap<QString, QSharedPointer<User>> userMap; //用户名到用户对象的映射.

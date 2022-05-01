@@ -85,6 +85,11 @@ bool ItemManage::modifyReceivingTime(const int id, const Time &receivingTime)
     return db->modifyItemReceivingTime(id, receivingTime);
 }
 
+bool ItemManage::modifyExpressman(const int id, const QString &expressman)
+{
+    return db->modifyItemExpressman(id, expressman);
+}
+
 bool ItemManage::deleteItem(const int id) const
 {
     qDebug() << "删除id为" << id << "的物品";

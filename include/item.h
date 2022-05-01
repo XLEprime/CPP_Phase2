@@ -130,6 +130,12 @@ public:
     const QString &getDstName() const { return dstName; }
 
     /**
+     * @brief 获得快递员的用户名
+     * @return const QString& 快递员的用户名
+     */
+    const QString &getExpressman() const { return expressman; }
+
+    /**
      * @brief 获得描述信息
      * @return const QString& 描述信息
      */
@@ -338,7 +344,24 @@ public:
      */
     bool modifyState(const int id, const int state);
 
+    /**
+     * @brief 修改接收时间
+     *
+     * @param id 物品单号
+     * @param receivingTime 接收时间
+     * @return true 修改成功
+     * @return false 修改失败
+     */
     bool modifyReceivingTime(const int id, const Time &receivingTime);
+
+    /**
+     * @brief 修改快递员
+     * @param id 物品单号
+     * @param expressman 快递员
+     * @return true 修改成功
+     * @return false 修改失败
+     */
+    bool modifyExpressman(const int id, const QString &expressman);
 
     /**
      * @brief 从数据库中删除对应id的物品

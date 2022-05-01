@@ -99,7 +99,7 @@ QString UserManage::queryItem(const QJsonObject &token, const QJsonObject &filte
 
     int id = -1;
     Time sendingTime(-1, -1, -1), receivingTime(-1, -1, -1);
-    QString srcName(""), dstName("");
+    QString srcName(""), dstName(""), expressman("");
     if (filter.contains("id"))
         id = filter["id"].toInt();
     if (filter.contains("sendingTime_Year"))
@@ -118,17 +118,22 @@ QString UserManage::queryItem(const QJsonObject &token, const QJsonObject &filte
         srcName = filter["srcName"].toString();
     if (filter.contains("dstName"))
         dstName = filter["dstName"].toString();
+    if (filter.contains("expressman"))
+        dstName = filter["expressman"].toString();
 
     switch (filter["type"].toInt())
     {
     case 0:
-        cnt = itemManage->queryByFilter(result, id, sendingTime, receivingTime, srcName, dstName);
+        cnt = itemManage->queryByFilter(result, id, sendingTime, receivingTime, srcName, dstName, expressman);
         break;
     case 1:
-        cnt = itemManage->queryByFilter(result, id, sendingTime, receivingTime, username, dstName);
+        cnt = itemManage->queryByFilter(result, id, sendingTime, receivingTime, username, dstName, expressman);
         break;
     case 2:
-        cnt = itemManage->queryByFilter(result, id, sendingTime, receivingTime, srcName, username);
+        cnt = itemManage->queryByFilter(result, id, sendingTime, receivingTime, srcName, username, expressman);
+        break;
+    case 3:
+        cnt = itemManage->queryByFilter(result, id, sendingTime, receivingTime, srcName, dstName, username);
         break;
     default:
         return "type键的值有误";
@@ -150,6 +155,7 @@ QString UserManage::queryItem(const QJsonObject &token, const QJsonObject &filte
         itemJson.insert("receivingTime_Day", item->getReceivingTime().day);
         itemJson.insert("srcName", item->getSrcName());
         itemJson.insert("dstName", item->getDstName());
+        itemJson.insert("expressman", item->getExpressman());
         itemJson.insert("description", item->getDescription());
         ret.append(itemJson);
     }
@@ -337,15 +343,40 @@ QString UserManage::sendItem(const QJsonObject &token, const QJsonObject &info) 
         return "快递类型有误";
     }
 
-    QString ret = transferBalance(token, cost, "ADMINISTRATOR");
+    QString ret = transferBalance(token, cost, "admin");
     if (!ret.isEmpty())
         return ret;
 
     Time sendingTime(Time::getCurYear(), Time::getCurMonth(), Time::getCurDay());
-    int id = itemManage->insertItem(cost, info["type"].toInt(), PENDING_REVEICING, sendingTime, Time(-1, -1, -1), username, info["dstName"].toString(), info["expressman"].toString(), info["description"].toString());
+    int id = itemManage->insertItem(cost, info["type"].toInt(), PENDING_REVEICING, sendingTime, Time(-1, -1, -1), username, info["dstName"].toString(), "未分配", info["description"].toString());
     qDebug() << "添加快递单号为" << id;
     ret = QString::number(cost);
     return ret;
+}
+
+QString UserManage::deliveryItem(const QJsonObject &token, const QJsonObject &info) const
+{
+    QString username = verify(token);
+    if (username.isEmpty())
+        return "验证失败";
+    if (userMap[username]->getUserType() != EXPRESSMAN)
+        return "非快递员不能运送快递";
+
+    if (!info.contains("itemId"))
+        return "快递物品信息不全";
+
+    QSharedPointer<Item> result;
+    if (!itemManage->queryById(result, info["itemId"].toInt()))
+        return "不存在运单号为该ID的物品";
+    if (result->getState() != PENDING_REVEICING)
+        return "该快递已发出";
+    if (result->getExpressman() != username)
+        return "这不是你所属的快递";
+
+    if (itemManage->modifyState(info["itemId"].toInt(), PENDING_REVEICING))
+        return {};
+    else
+        return "修改失败";
 }
 
 QString UserManage::receiveItem(const QJsonObject &token, const QJsonObject &info) const
@@ -364,10 +395,45 @@ QString UserManage::receiveItem(const QJsonObject &token, const QJsonObject &inf
         return "不存在运单号为该ID的物品";
     if (result->getDstName() != username)
         return "这不是您的快递";
-    if (result->getState() != PENDING_REVEICING)
-        return {"该快递还未到达"};
+    if (result->getState() == PENDING_COLLECTING)
+        return "该快递还未到达";
+    if (result->getState() == RECEIVED)
+        return "该快递已签收";
 
-    itemManage->modifyState(info["id"].toInt(), RECEIVED);
-    itemManage->modifyReceivingTime(info["id"].toInt(), Time(Time::getCurYear(), Time::getCurMonth(), Time::getCurDay()));
-    return {};
+    if (itemManage->modifyState(info["id"].toInt(), RECEIVED) && itemManage->modifyReceivingTime(info["id"].toInt(), Time(Time::getCurYear(), Time::getCurMonth(), Time::getCurDay())))
+        return {};
+    else
+        return "接收失败";
+}
+
+QString UserManage::assignExpressman(const QJsonObject &token, const QJsonObject &info) const
+{
+    QString username = verify(token);
+    if (username.isEmpty())
+        return "验证失败";
+    if (userMap[username]->getUserType() != ADMINISTRATOR)
+        return "非管理员不能为快递指定快递员";
+
+    if (!info.contains("expressman") || !info.contains("itemId"))
+        return "快递物品信息不全";
+
+    QSharedPointer<Item> result;
+    if (!itemManage->queryById(result, info["itemId"].toInt()))
+        return "不存在运单号为该ID的物品";
+
+    QString retPassword;
+    int retType;
+    int retBalance;
+    QString retName;
+    QString retPhoneNumber;
+    QString retAddress;
+    if (!(db->queryUserByName(info["expressman"].toString(), retPassword, retType, retBalance, retName, retPhoneNumber, retAddress)))
+        return "不存在该快递员";
+    if (retType != EXPRESSMAN)
+        return "该用户不是快递员";
+
+    if (itemManage->modifyExpressman(info["itemId"].toInt(), info["expressman"].toString()))
+        return {};
+    else
+        return "修改失败";
 }

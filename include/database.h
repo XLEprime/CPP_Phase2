@@ -166,7 +166,7 @@ public:
      * @param expressman
      * @return int 查到符合条件的数量
      */
-    int queryItemByFilter(QList<QSharedPointer<Item>> &result, int id, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName, const QString &expressman) const;
+    int queryItemByFilter(QList<QSharedPointer<Item>> &result, int id, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &expressman, const QString &dstName) const;
 
     /**
      * @brief 修改物品状态
@@ -193,7 +193,7 @@ public:
      * @return true 修改成功
      * @return false 修改失败
      */
-    bool modifyItemReceivingTime(const int id, const Time receivingTime);
+    bool modifyItemReceivingTime(const int id, const Time &receivingTime);
 
     /**
      * @brief 删除物品

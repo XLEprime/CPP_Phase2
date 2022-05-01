@@ -96,11 +96,11 @@ Database::Database(const QString &connectionName, const QString &fileName) : use
     {
         QString line = stream.readLine();
         usernameSet.insert(line);
-        if (line == "ADMINISTRATOR")
+        if (line == "admin")
             isAdministratorExist = true;
     }
     if (!isAdministratorExist)
-        insertUser("ADMINISTRATOR", "123", ADMINISTRATOR, 0, "Administrator1", "88888888", "环宇物流大厦");
+        insertUser("admin", "123", ADMINISTRATOR, 0, "Administrator1", "88888888", "环宇物流大厦");
 }
 
 bool Database::modifyData(const QString &tableName, const QString &primaryKey, const QString &key, int value) const
@@ -297,7 +297,7 @@ void Database::insertItem(int id, int cost, int type, int state, const Time &sen
     sqlQuery.prepare("INSERT INTO item VALUES(:id, :cost, :type, :state,"
                      " :sendingTime_Year, :sendingTime_Month, :sendingTime_Day,"
                      " :receivingTime_Year, :receivingTime_Month, :receivingTime_Day,"
-                     " :srcName, :dstName, :description)"); // phase2开始添加type
+                     " :srcName, :dstName, :expressman, :description)");
     sqlQuery.bindValue(":id", id);
     sqlQuery.bindValue(":cost", cost);
     sqlQuery.bindValue(":type", type);
@@ -384,7 +384,7 @@ int Database::queryAllUser(QList<QSharedPointer<User>> &result)
     }
 }
 
-int Database::queryItemByFilter(QList<QSharedPointer<Item>> &result, int id, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &expressman, const QString &dstName) const
+int Database::queryItemByFilter(QList<QSharedPointer<Item>> &result, int id, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName, const QString &expressman) const
 {
     QSqlQuery sqlQuery(db);
     QString queryString("SELECT * FROM item");
@@ -475,12 +475,12 @@ bool Database::modifyItemExpressman(const int id, const QString &expressman)
     return modifyData("item", QString::number(id), "expressman", expressman);
 }
 
-bool Database::modifyItemReceivingTime(const int id, const Time receivingTime)
+bool Database::modifyItemReceivingTime(const int id, const Time &receivingTime)
 {
     bool flag1 = false, flag2 = false, flag3 = false;
     flag1 = modifyData("item", QString::number(id), "receivingTime_Year", receivingTime.year);
     flag2 = modifyData("item", QString::number(id), "receivingTime_Month", receivingTime.month);
-    flag2 = modifyData("item", QString::number(id), "receivingTime_Day", receivingTime.day);
+    flag3 = modifyData("item", QString::number(id), "receivingTime_Day", receivingTime.day);
     return flag1 && flag2 && flag3;
 }
 
