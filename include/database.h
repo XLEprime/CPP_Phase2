@@ -64,25 +64,9 @@ public:
     /**
      * @brief 根据用户名查询用户是否存在
      * @param username 用户名
-     * @return true 查询到用户
-     * @return false 没查询到用户
+     * @return QSharedPointer<User> 查询到用户则返回指针，否则返回NULL
      */
-    bool queryUserByName(const QString &username) const;
-
-    /**
-     * @brief 根据用户名查询用户是否存在且返回密码，用户类型，余额
-     *
-     * @param username 用户名
-     * @param retPassword 返回密码
-     * @param retType 返回UserType
-     * @param retBalance 返回余额
-     * @param retName 返回姓名
-     * @param retPhoneNumber 返回电话号码
-     * @param retAddress 返回地址
-     * @return true 查询到用户
-     * @return false 没查询到用户
-     */
-    bool queryUserByName(const QString &username, QString &retPassword, int &retType, int &retBalance, QString &retName, QString &retPhoneNumber, QString &retAddress) const;
+    QSharedPointer<User> queryUserByName(const QString &username) const;
 
     /**
      * @brief 获得用户名对应的余额

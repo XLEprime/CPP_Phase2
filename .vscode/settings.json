@@ -23,6 +23,7 @@
         "vector": "cpp",
         "ctime": "cpp",
         "qdebug": "cpp",
-        "string_view": "cpp"
+        "string_view": "cpp",
+        "random": "cpp"
     }
 }

@@ -208,32 +208,10 @@ QString UserManage::deleteExpressman(const QJsonObject &token, const QString &ex
 
 QString UserManage::login(const QString &username, const QString &password, QJsonObject &token)
 {
-    QString retPassword;
-    int retType;
-    int retBalance;
-    QString retName;
-    QString retPhoneNumber;
-    QString retAddress;
-    if (db->queryUserByName(username, retPassword, retType, retBalance, retName, retPhoneNumber, retAddress) && retPassword == password)
+    QSharedPointer<User> user = db->queryUserByName(username);
+    if (user && user->getPassword() == password)
     {
-        switch (retType)
-        {
-        case CUSTOMER:
-            if (!userMap[username])
-                userMap[username] = QSharedPointer<Customer>::create(username, retPassword, retBalance, retName, retPhoneNumber, retAddress);
-            break;
-        case ADMINISTRATOR:
-            if (!userMap[username])
-                userMap[username] = QSharedPointer<Administrator>::create(username, retPassword, retBalance, retName, retPhoneNumber, retAddress);
-            break;
-        case EXPRESSMAN:
-            if (!userMap[username])
-                userMap[username] = QSharedPointer<Expressman>::create(username, retPassword, retBalance, retName, retPhoneNumber, retAddress);
-            break;
-        default:
-            return "数据库中用户类型错误";
-            break;
-        }
+        userMap[username] = user;
         token.insert("iss", "Haolin Yang");
         token.insert("username", username);
         return {};
@@ -317,14 +295,8 @@ QString UserManage::sendItem(const QJsonObject &token, const QJsonObject &info) 
     if (!db->queryUserByName(info["dstName"].toString()))
         return "收件用户不存在";
 
-    QString retPassword;
-    int retType;
-    int retBalance;
-    QString retName;
-    QString retPhoneNumber;
-    QString retAddress;
-    db->queryUserByName(info["dstName"].toString(), retPassword, retType, retBalance, retName, retPhoneNumber, retAddress);
-    if (retType != CUSTOMER)
+    QSharedPointer<User> user = db->queryUserByName(info["dstName"].toString());
+    if (user->getUserType() != CUSTOMER)
         return "你只能给用户寄出快递";
 
     int cost = 0;
@@ -425,15 +397,10 @@ QString UserManage::assignExpressman(const QJsonObject &token, const QJsonObject
     if (!itemManage->queryById(result, info["itemId"].toInt()))
         return "不存在运单号为该ID的物品";
 
-    QString retPassword;
-    int retType;
-    int retBalance;
-    QString retName;
-    QString retPhoneNumber;
-    QString retAddress;
-    if (!(db->queryUserByName(info["expressman"].toString(), retPassword, retType, retBalance, retName, retPhoneNumber, retAddress)))
+    QSharedPointer<User> user = db->queryUserByName(info["expressman"].toString());
+    if (!user)
         return "不存在该快递员";
-    if (retType != EXPRESSMAN)
+    if (user->getUserType() != EXPRESSMAN)
         return "该用户不是快递员";
 
     if (itemManage->modifyExpressman(info["itemId"].toInt(), info["expressman"].toString()))

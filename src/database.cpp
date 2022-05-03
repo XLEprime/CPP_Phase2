@@ -174,7 +174,7 @@ void Database::insertUser(const QString &username, const QString &password, int 
         qCritical() << "数据库:插入user " << username << " 失败" << sqlQuery.lastError();
 }
 
-bool Database::queryUserByName(const QString &username) const
+QSharedPointer<User> Database::queryUserByName(const QString &username) const
 {
     QSqlQuery sqlQuery(db);
     sqlQuery.prepare("SELECT * FROM user WHERE username = :username");
@@ -183,56 +183,19 @@ bool Database::queryUserByName(const QString &username) const
     exec(sqlQuery);
     if (sqlQuery.exec())
     {
-        qDebug() << "数据库:查找user" << username << "成功";
+        qDebug() << "数据库:查找user" << username << "操作执行成功";
         if (sqlQuery.next())
         {
-            if (usernameSet.find(username) != usernameSet.constEnd())
-                qDebug() << "文件中查找到用户 " << username;
-            else
-                qFatal("数据库和文件不同步");
-            return true;
+            qDebug() << "数据库:" << username << "在数据库中存在";
+            return query2User(sqlQuery);
         }
         qDebug() << "数据库:" << username << "在数据库中不存在";
-        return false;
+        return NULL;
     }
     else
     {
         qCritical() << "数据库:没有username为" << username << "的记录" << sqlQuery.lastError();
-        return false;
-    }
-}
-
-bool Database::queryUserByName(const QString &username, QString &retPassword, int &retType, int &retBalance, QString &retName, QString &retPhoneNumber, QString &retAddress) const
-{
-    QSqlQuery sqlQuery(db);
-    sqlQuery.prepare("SELECT password, type, balance, name, phonenumber, address FROM user WHERE username = :username");
-    sqlQuery.bindValue(":username", username);
-
-    exec(sqlQuery);
-    if (!sqlQuery.exec())
-    {
-        qCritical() << "数据库: 用户 " << username << " 查找失败" << sqlQuery.lastError();
-        return false;
-    }
-    else
-    {
-        if (sqlQuery.next())
-        {
-            retPassword = sqlQuery.value(0).toString();
-            retType = sqlQuery.value(1).toInt();
-            retBalance = sqlQuery.value(2).toInt();
-            retName = sqlQuery.value(3).toString();
-            retPhoneNumber = sqlQuery.value(4).toString();
-            retAddress = sqlQuery.value(5).toString();
-
-            qDebug() << "数据库: 用户 " << username << "查找成功";
-            return true;
-        }
-        else
-        {
-            qCritical() << "数据库: 用户 " << username << " 查找失败" << sqlQuery.lastError();
-            return false;
-        }
+        return NULL;
     }
 }
 
@@ -334,7 +297,6 @@ QSharedPointer<User> Database::query2User(const QSqlQuery &sqlQuery) const
         result = QSharedPointer<Expressman>::create(sqlQuery.value(0).toString(), sqlQuery.value(1).toString(), sqlQuery.value(3).toInt(), sqlQuery.value(4).toString(), sqlQuery.value(5).toString(), sqlQuery.value(6).toString());
         break;
     }
-
     return result;
 }
 
@@ -366,12 +328,7 @@ int Database::queryAllUser(QList<QSharedPointer<User>> &result)
     sqlQuery.prepare("SELECT * FROM user");
 
     exec(sqlQuery);
-    if (!sqlQuery.exec())
-    {
-        qCritical() << "数据库:查找用户失败" << sqlQuery.lastError();
-        return 0;
-    }
-    else
+    if (sqlQuery.exec())
     {
         int cnt = 0;
         while (sqlQuery.next())
@@ -381,6 +338,11 @@ int Database::queryAllUser(QList<QSharedPointer<User>> &result)
         }
         qDebug() << "数据库:查找用户成功，共" << cnt << "条";
         return cnt;
+    }
+    else
+    {
+        qCritical() << "数据库:查找用户失败" << sqlQuery.lastError();
+        return 0;
     }
 }
 
