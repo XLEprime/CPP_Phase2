@@ -318,15 +318,15 @@ public:
     QString registerUser(const QJsonObject &token, const QString &username, const QString &password, int type, const QString &name, const QString &phoneNumber, const QString &address) const;
 
     /**
-     * @brief 删除
+     * @brief 删除快递员
      *
      * @param token 凭据
-     * @param username 用户名
+     * @param expressman 快递员用户名
      * @return QString 如果删除成功，返回空串，否则返回错误信息.
      * @note 只有EXPRESSMAN支持删除
      * @note 只有ADMINISTRATOR有权限删除EXPRESSMAN
      */
-    QString deleteExpressman(const QJsonObject &token, const QString &username) const;
+    QString deleteExpressman(const QJsonObject &token, const QString &expressman) const;
 
     /**
      * @brief 登录

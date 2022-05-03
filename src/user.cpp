@@ -191,16 +191,16 @@ QString UserManage::registerUser(const QJsonObject &token, const QString &userna
     return {};
 }
 
-QString UserManage::deleteExpressman(const QJsonObject &token, const QString &expressmanName) const
+QString UserManage::deleteExpressman(const QJsonObject &token, const QString &expressman) const
 {
     QString username = verify(token);
     if (userMap[username]->getUserType() != ADMINISTRATOR)
         return "非管理员不能删除快递员";
 
-    if (!db->queryUserByName(expressmanName))
+    if (!db->queryUserByName(expressman))
         return "该快递员不存在";
 
-    if (db->deleteUser(expressmanName))
+    if (db->deleteUser(expressman))
         return "";
     else
         return "删除失败";
