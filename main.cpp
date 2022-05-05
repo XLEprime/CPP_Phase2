@@ -48,7 +48,7 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
 
 int main()
 {
-    qInstallMessageHandler(messageHandler);
+    qInstallMessageHandler(messageHandler);//Qt自带的输出详细日志
     Database database("defaultConnection", "../data/users.txt");
     ItemManage itemManage(&database);
     UserManage userManage(&database, &itemManage);
