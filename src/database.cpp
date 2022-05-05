@@ -35,7 +35,7 @@ const QString &Database::getPrimaryKeyByTableName(const QString &tableName)
 Database::Database(const QString &connectionName, const QString &fileName) : userFile(fileName), usernameSet()
 {
     db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
-    db.setDatabaseName("MyDataBase.sqlite");
+    db.setDatabaseName("../data/db.sqlite");
     db.open();
 
     if (!db.tables().contains("user")) //若不包含user，则创建。

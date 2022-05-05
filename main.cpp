@@ -49,7 +49,7 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
 int main()
 {
     qInstallMessageHandler(messageHandler);
-    Database database("defaultConnection", "users.txt");
+    Database database("defaultConnection", "../data/users.txt");
     ItemManage itemManage(&database);
     UserManage userManage(&database, &itemManage);
 
