@@ -168,7 +168,7 @@ void Database::insertUser(const QString &username, const QString &password, int 
     {
         qDebug() << "数据库:插入user " << username << " 成功";
         usernameSet.insert(username);
-        stream << username << endl; // 向文件中写入用户名
+        stream << username << Qt::endl;
     }
     else
         qCritical() << "数据库:插入user " << username << " 失败" << sqlQuery.lastError();

@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.17)
-project(CPP_Phase1)
+project(CPP_Phase2)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-set(CMAKE_PREFIX_PATH "D:/develop/Qt/5.12.2/mingw73_64")
+set(CMAKE_PREFIX_PATH "D:\\develop\\Qt\\5.15.2\\mingw81_64")
 
 find_package(Qt5 COMPONENTS Sql REQUIRED)
 set(CMAKE_AUTOMOC ON)
