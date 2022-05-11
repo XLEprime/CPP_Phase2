@@ -14,7 +14,7 @@
 
 void Item::insertInfo2DB(Database *db)
 {
-    db->insertItem(id, cost, type, state, sendingTime, sendingTime, srcName, dstName, expressman, description);
+    db->insertItem(id, cost, type, state, sendingTime, receivingTime, srcName, dstName, expressman, description);
 }
 
 ItemManage::ItemManage(Database *_db) : db(_db)
