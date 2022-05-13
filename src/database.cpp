@@ -356,19 +356,35 @@ int Database::queryItemByFilter(QList<QSharedPointer<Item>> &result, int id, con
         queryString += QString(flag ? " AND " : " WHERE ") + "id = :id";
         flag = true;
     }
-    if (sendingTime.day != -1 || sendingTime.month != -1 || sendingTime.day != -1)
+    if (sendingTime.year != -1)
     {
         queryString += QString(flag ? " AND " : " WHERE ") + "sendingTime_Year = :sendingTime_Year";
         flag = true;
-        queryString += QString(flag ? " AND " : " WHERE ") + "sendingTime_Month = :sendingTime_Month";
-        queryString += QString(flag ? " AND " : " WHERE ") + "sendingTime_Day = :sendingTime_Day";
     }
-    if (receivingTime.day != -1 || receivingTime.month != -1 || receivingTime.day != -1)
+    if (sendingTime.month != -1)
+    {
+        queryString += QString(flag ? " AND " : " WHERE ") + "sendingTime_Month = :sendingTime_Month";
+        flag = true;
+    }
+    if (sendingTime.day != -1)
+    {
+        queryString += QString(flag ? " AND " : " WHERE ") + "sendingTime_Day = :sendingTime_Day";
+        flag = true;
+    }
+    if (receivingTime.year != -1)
     {
         queryString += QString(flag ? " AND " : " WHERE ") + "receivingTime_Year = :receivingTime_Year";
         flag = true;
+    }
+    if (receivingTime.month != -1)
+    {
         queryString += QString(flag ? " AND " : " WHERE ") + "receivingTime_Month = :receivingTime_Month";
+        flag = true;
+    }
+    if (receivingTime.day != -1)
+    {
         queryString += QString(flag ? " AND " : " WHERE ") + "receivingTime_Day = :receivingTime_Day";
+        flag = true;
     }
     if (!srcName.isEmpty())
     {
@@ -389,18 +405,18 @@ int Database::queryItemByFilter(QList<QSharedPointer<Item>> &result, int id, con
 
     if (id != -1)
         sqlQuery.bindValue(":id", id);
-    if (sendingTime.day != -1 || sendingTime.month != -1 || sendingTime.day != -1)
-    {
+    if (sendingTime.year != -1)
         sqlQuery.bindValue(":sendingTime_Year", sendingTime.year);
+    if (sendingTime.month != -1)
         sqlQuery.bindValue(":sendingTime_Month", sendingTime.month);
-        sqlQuery.bindValue(":sendingTime_day", sendingTime.day);
-    }
-    if (receivingTime.day != -1 || receivingTime.month != -1 || receivingTime.day != -1)
-    {
+    if (sendingTime.day != -1)
+        sqlQuery.bindValue(":sendingTime_Day", sendingTime.day);
+    if (receivingTime.year != -1)
         sqlQuery.bindValue(":receivingTime_Year", receivingTime.year);
+    if (receivingTime.month != -1)
         sqlQuery.bindValue(":receivingTime_Month", receivingTime.month);
-        sqlQuery.bindValue(":receivingTime_day", receivingTime.day);
-    }
+    if (receivingTime.day != -1)
+        sqlQuery.bindValue(":receivingTime_Day", receivingTime.day);
     if (!srcName.isEmpty())
         sqlQuery.bindValue(":srcName", srcName);
     if (!dstName.isEmpty())
