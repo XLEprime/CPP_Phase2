@@ -54,19 +54,19 @@ int ItemManage::insertItem(
 int ItemManage::queryAll(QList<QSharedPointer<Item>> &result) const
 {
     qDebug() << "查询所有物品";
-    return db->queryItemByFilter(result, -1, Time(-1, -1, -1), Time(-1, -1, -1), "", "", "");
+    return db->queryItemByFilter(result, -1, -1, Time(-1, -1, -1), Time(-1, -1, -1), "", "", "");
 }
 
-int ItemManage::queryByFilter(QList<QSharedPointer<Item>> &result, const int id, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName, const QString &expressman) const
+int ItemManage::queryByFilter(QList<QSharedPointer<Item>> &result, const int id, const int state, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName, const QString &expressman) const
 {
     qDebug() << "按条件查询";
-    return db->queryItemByFilter(result, id, sendingTime, receivingTime, srcName, dstName, expressman);
+    return db->queryItemByFilter(result, id, state, sendingTime, receivingTime, srcName, dstName, expressman);
 }
 
 bool ItemManage::queryById(QSharedPointer<Item> &result, const int id) const
 {
     QList<QSharedPointer<Item>> temp;
-    if (db->queryItemByFilter(temp, id, Time(-1, -1, -1), Time(-1, -1, -1), "", "", ""))
+    if (db->queryItemByFilter(temp, id, -1, Time(-1, -1, -1), Time(-1, -1, -1), "", "", ""))
     {
         result = temp[0];
         return true;

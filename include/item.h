@@ -317,6 +317,7 @@ public:
      * @brief 根据条件查询物品
      * @param result 用于返回结果
      * @param id 物品单号
+     * @param state 物品状态
      * @param sendingTime 寄送时间
      * @param receivingTime 接收时间
      * @param srcName 寄件用户的用户名
@@ -324,7 +325,7 @@ public:
      * @param expressman 快递员的用户名
      * @return int 查到符合条件的数量
      */
-    int queryByFilter(QList<QSharedPointer<Item>> &result, const int id = -1, const Time &sendingTime = Time(-1, -1, -1), const Time &receivingTime = Time(-1, -1, -1), const QString &srcName = "", const QString &dstName = "", const QString &expressman = "") const;
+    int queryByFilter(QList<QSharedPointer<Item>> &result, const int id = -1, const int state = -1, const Time &sendingTime = Time(-1, -1, -1), const Time &receivingTime = Time(-1, -1, -1), const QString &srcName = "", const QString &dstName = "", const QString &expressman = "") const;
 
     /**
      * @brief 根据条件查询物品

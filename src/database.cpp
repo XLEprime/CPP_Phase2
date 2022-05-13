@@ -346,7 +346,7 @@ int Database::queryAllUser(QList<QSharedPointer<User>> &result)
     }
 }
 
-int Database::queryItemByFilter(QList<QSharedPointer<Item>> &result, int id, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName, const QString &expressman) const
+int Database::queryItemByFilter(QList<QSharedPointer<Item>> &result, int id, int state, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName, const QString &expressman) const
 {
     QSqlQuery sqlQuery(db);
     QString queryString("SELECT * FROM item");
@@ -354,6 +354,11 @@ int Database::queryItemByFilter(QList<QSharedPointer<Item>> &result, int id, con
     if (id != -1)
     {
         queryString += QString(flag ? " AND " : " WHERE ") + "id = :id";
+        flag = true;
+    }
+    if (state != -1)
+    {
+        queryString += QString(flag ? " AND " : " WHERE ") + "state = :state";
         flag = true;
     }
     if (sendingTime.year != -1)
@@ -405,6 +410,8 @@ int Database::queryItemByFilter(QList<QSharedPointer<Item>> &result, int id, con
 
     if (id != -1)
         sqlQuery.bindValue(":id", id);
+    if (state != -1)
+        sqlQuery.bindValue(":state", state);
     if (sendingTime.year != -1)
         sqlQuery.bindValue(":sendingTime_Year", sendingTime.year);
     if (sendingTime.month != -1)

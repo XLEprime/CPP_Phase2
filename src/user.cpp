@@ -97,11 +97,13 @@ QString UserManage::queryItem(const QJsonObject &token, const QJsonObject &filte
 
     QList<QSharedPointer<Item>> result;
 
-    int id = -1;
+    int id = -1, state = -1;
     Time sendingTime(-1, -1, -1), receivingTime(-1, -1, -1);
     QString srcName(""), dstName(""), expressman("");
     if (filter.contains("id"))
         id = filter["id"].toInt();
+    if (filter.contains("state"))
+        state = filter["state"].toInt();
     if (filter.contains("sendingTime_Year"))
         sendingTime.year = filter["sendingTime_Year"].toInt();
     if (filter.contains("sendingTime_Month"))
@@ -124,16 +126,16 @@ QString UserManage::queryItem(const QJsonObject &token, const QJsonObject &filte
     switch (filter["type"].toInt())
     {
     case 0:
-        cnt = itemManage->queryByFilter(result, id, sendingTime, receivingTime, srcName, dstName, expressman);
+        cnt = itemManage->queryByFilter(result, id, state, sendingTime, receivingTime, srcName, dstName, expressman);
         break;
     case 1:
-        cnt = itemManage->queryByFilter(result, id, sendingTime, receivingTime, username, dstName, expressman);
+        cnt = itemManage->queryByFilter(result, id, state, sendingTime, receivingTime, username, dstName, expressman);
         break;
     case 2:
-        cnt = itemManage->queryByFilter(result, id, sendingTime, receivingTime, srcName, username, expressman);
+        cnt = itemManage->queryByFilter(result, id, state, sendingTime, receivingTime, srcName, username, expressman);
         break;
     case 3:
-        cnt = itemManage->queryByFilter(result, id, sendingTime, receivingTime, srcName, dstName, username);
+        cnt = itemManage->queryByFilter(result, id, state, sendingTime, receivingTime, srcName, dstName, username);
         break;
     default:
         return "type键的值有误";

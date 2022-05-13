@@ -48,7 +48,7 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
 
 int main()
 {
-    qInstallMessageHandler(messageHandler);//Qt自带的输出详细日志
+    qInstallMessageHandler(messageHandler); // Qt自带的输出详细日志
     Database database("defaultConnection", "../data/users.txt");
     ItemManage itemManage(&database);
     UserManage userManage(&database, &itemManage);
@@ -95,14 +95,14 @@ int main()
             qInfo() << "充值: addbalance <增加量>";
             qInfo() << "查询所有快递: queryallitem";
             qInfo() << "    注意此功能仅限管理员使用。";
-            qInfo() << "查询所有符合条件的快递: query <物品单号> <寄送时间年> <寄送时间月> <寄送时间日> <接收时间年> <接收时间月> <接收时间日> <寄件用户的用户名> <收件用户的用户名>";
-            qInfo() << "    若要查询所有符合该条件的物品，则该条件用*代替。注意此功能仅限管理员使用。";
-            qInfo() << "查询快递员所属所有符合条件的快递: queryexpress <物品单号> <寄送时间年> <寄送时间月> <寄送时间日> <接收时间年> <接收时间月> <接收时间日> <寄件用户的用户名> <收件用户的用户名>";
+            qInfo() << "查询所有符合条件的快递: query <物品单号> <寄送时间年> <寄送时间月> <寄送时间日> <接收时间年> <接收时间月> <接收时间日> <寄件用户的用户名> <收件用户的用户名> <快递状态>";
+            qInfo() << "    若要查询所有符合该条件的物品，则该条件用*代替。注意此功能仅限管理员使用。其中快递状态：1 待揽收 2 待签收 3 已签收。";
+            qInfo() << "查询快递员所属所有符合条件的快递: queryexpress <物品单号> <寄送时间年> <寄送时间月> <寄送时间日> <接收时间年> <接收时间月> <接收时间日> <寄件用户的用户名> <收件用户的用户名> <快递状态>";
             qInfo() << "    注意此功能仅限快递员使用。若要查询所有符合该条件的物品，则该条件用*代替。若要查询全部，可以只输入queryexpress。";
-            qInfo() << "查找发出的符合条件的快递: querysrc <物品单号> <寄送时间年> <寄送时间月> <寄送时间日> <接收时间年> <接收时间月> <接收时间日> <收件用户的用户名>";
-            qInfo() << "    若要查询所有符合该条件的物品，则该条件用*代替。若要查询全部，可以只输入querysrc。";
-            qInfo() << "查找将收到的符合条件的快递: querysrc <物品单号> <寄送时间年> <寄送时间月> <寄送时间日> <接收时间年> <接收时间月> <接收时间日> <寄件用户的用户名>";
-            qInfo() << "    若要查询所有符合该条件的物品，则该条件用*代替。若要查询全部，可以只输入querydst。";
+            qInfo() << "查找发出的符合条件的快递: querysrc <物品单号> <寄送时间年> <寄送时间月> <寄送时间日> <接收时间年> <接收时间月> <接收时间日> <收件用户的用户名> <快递状态>";
+            qInfo() << "    若要查询所有符合该条件的物品，则该条件用*代替。若要查询全部，可以只输入querysrc。其中快递状态：1 待揽收 2 待签收 3 已签收。";
+            qInfo() << "查找将收到的符合条件的快递: querysrc <物品单号> <寄送时间年> <寄送时间月> <寄送时间日> <接收时间年> <接收时间月> <接收时间日> <寄件用户的用户名> <快递状态>";
+            qInfo() << "    若要查询所有符合该条件的物品，则该条件用*代替。若要查询全部，可以只输入querydst。其中快递状态：1 待揽收 2 待签收 3 已签收。";
             qInfo() << "发送快递: send <收件用户的用户名> <物品类别> <数量> <描述>";
             qInfo() << "    其中<物品类别>为整数：1 易碎品 2 图书 3普通快递 <数量>为整数： 易碎品单位为斤 图书单位为本 普通快递单位为斤 若为小数则向上取整计算价格";
             qInfo() << "接收快递: receive <物品单号>";
@@ -317,7 +317,7 @@ int main()
             else
                 qInfo() << "查询失败" << ret;
         }
-        else if (args[0] == "query" && args.size() == 11 && ((args[1] == '*') || args[1].toInt(&ok) && ok) && ((args[2] == '*') || args[2].toInt(&ok) && ok) && ((args[3] == '*') || args[3].toInt(&ok) && ok) && ((args[4] == '*') || args[4].toInt(&ok) && ok) && ((args[5] == '*') || args[5].toInt(&ok) && ok) && ((args[6] == '*') || args[6].toInt(&ok) && ok) && ((args[7] == '*') || args[7].toInt(&ok) && ok))
+        else if (args[0] == "query" && args.size() == 12 && ((args[1] == '*') || args[1].toInt(&ok) && ok) && ((args[2] == '*') || args[2].toInt(&ok) && ok) && ((args[3] == '*') || args[3].toInt(&ok) && ok) && ((args[4] == '*') || args[4].toInt(&ok) && ok) && ((args[5] == '*') || args[5].toInt(&ok) && ok) && ((args[6] == '*') || args[6].toInt(&ok) && ok) && ((args[7] == '*') || args[7].toInt(&ok) && ok) && ((args[11] == '*') || args[11].toInt(&ok) && ok))
         {
             if (token.isNull())
             {
@@ -346,6 +346,8 @@ int main()
                 filter.insert("dstName", args[9]);
             if (args[10] != "*")
                 filter.insert("expressman", args[10]);
+            if (args[11] != "*")
+                filter.insert("state", args[11].toInt());
             QJsonArray queryRet;
             QString ret = userManage.queryItem(token.toObject(), filter, queryRet);
             if (ret.isEmpty())
@@ -359,7 +361,7 @@ int main()
             else
                 qInfo() << "查询失败" << ret;
         }
-        else if (args[0] == "querysrc" && args.size() == 10 && ((args[1] == '*') || args[1].toInt(&ok) && ok) && ((args[2] == '*') || args[2].toInt(&ok) && ok) && ((args[3] == '*') || args[3].toInt(&ok) && ok) && ((args[4] == '*') || args[4].toInt(&ok) && ok) && ((args[5] == '*') || args[5].toInt(&ok) && ok) && ((args[6] == '*') || args[6].toInt(&ok) && ok) && ((args[7] == '*') || args[7].toInt(&ok) && ok))
+        else if (args[0] == "querysrc" && args.size() == 11 && ((args[1] == '*') || args[1].toInt(&ok) && ok) && ((args[2] == '*') || args[2].toInt(&ok) && ok) && ((args[3] == '*') || args[3].toInt(&ok) && ok) && ((args[4] == '*') || args[4].toInt(&ok) && ok) && ((args[5] == '*') || args[5].toInt(&ok) && ok) && ((args[6] == '*') || args[6].toInt(&ok) && ok) && ((args[7] == '*') || args[7].toInt(&ok) && ok) && ((args[10] == '*') || args[10].toInt(&ok) && ok))
         {
             if (token.isNull())
             {
@@ -385,7 +387,9 @@ int main()
             if (args[8] != "*")
                 filter.insert("dstName", args[8]);
             if (args[9] != "*")
-                filter.insert("expressman", args[8]);
+                filter.insert("expressman", args[9]);
+            if (args[10] != "*")
+                filter.insert("state", args[10].toInt());
             QJsonArray queryRet;
             QString ret = userManage.queryItem(token.toObject(), filter, queryRet);
             if (ret.isEmpty())
@@ -421,7 +425,7 @@ int main()
             else
                 qInfo() << "查询失败" << ret;
         }
-        else if (args[0] == "querydst" && args.size() == 10 && ((args[1] == '*') || args[1].toInt(&ok) && ok) && ((args[2] == '*') || args[2].toInt(&ok) && ok) && ((args[3] == '*') || args[3].toInt(&ok) && ok) && ((args[4] == '*') || args[4].toInt(&ok) && ok) && ((args[5] == '*') || args[5].toInt(&ok) && ok) && ((args[6] == '*') || args[6].toInt(&ok) && ok) && ((args[7] == '*') || args[7].toInt(&ok) && ok))
+        else if (args[0] == "querydst" && args.size() == 11 && ((args[1] == '*') || args[1].toInt(&ok) && ok) && ((args[2] == '*') || args[2].toInt(&ok) && ok) && ((args[3] == '*') || args[3].toInt(&ok) && ok) && ((args[4] == '*') || args[4].toInt(&ok) && ok) && ((args[5] == '*') || args[5].toInt(&ok) && ok) && ((args[6] == '*') || args[6].toInt(&ok) && ok) && ((args[7] == '*') || args[7].toInt(&ok) && ok) && ((args[10] == '*') || args[10].toInt(&ok) && ok))
         {
             if (token.isNull())
             {
@@ -447,7 +451,9 @@ int main()
             if (args[8] != "*")
                 filter.insert("srcName", args[8]);
             if (args[9] != "*")
-                filter.insert("expressman", args[8]);
+                filter.insert("expressman", args[9]);
+            if (args[10] != "*")
+                filter.insert("state", args[10].toInt());
             QJsonArray queryRet;
             QString ret = userManage.queryItem(token.toObject(), filter, queryRet);
             if (ret.isEmpty())
@@ -483,7 +489,7 @@ int main()
             else
                 qInfo() << "查询失败" << ret;
         }
-        else if (args[0] == "queryexpress" && args.size() == 11 && ((args[1] == '*') || args[1].toInt(&ok) && ok) && ((args[2] == '*') || args[2].toInt(&ok) && ok) && ((args[3] == '*') || args[3].toInt(&ok) && ok) && ((args[4] == '*') || args[4].toInt(&ok) && ok) && ((args[5] == '*') || args[5].toInt(&ok) && ok) && ((args[6] == '*') || args[6].toInt(&ok) && ok) && ((args[7] == '*') || args[7].toInt(&ok) && ok))
+        else if (args[0] == "queryexpress" && args.size() == 12 && ((args[1] == '*') || args[1].toInt(&ok) && ok) && ((args[2] == '*') || args[2].toInt(&ok) && ok) && ((args[3] == '*') || args[3].toInt(&ok) && ok) && ((args[4] == '*') || args[4].toInt(&ok) && ok) && ((args[5] == '*') || args[5].toInt(&ok) && ok) && ((args[6] == '*') || args[6].toInt(&ok) && ok) && ((args[7] == '*') || args[7].toInt(&ok) && ok)&& ((args[11] == '*') || args[11].toInt(&ok) && ok))
         {
             if (token.isNull())
             {
@@ -491,7 +497,7 @@ int main()
                 continue;
             }
             QJsonObject filter;
-            filter.insert("type", 0);
+            filter.insert("type", 3);
             if (args[1] != "*")
                 filter.insert("id", args[1].toInt());
             if (args[2] != "*")
@@ -512,6 +518,8 @@ int main()
                 filter.insert("dstName", args[9]);
             if (args[10] != "*")
                 filter.insert("expressman", args[10]);
+            if (args[11] != "*")
+                filter.insert("state", args[11].toInt());
             QJsonArray queryRet;
             QString ret = userManage.queryItem(token.toObject(), filter, queryRet);
             if (ret.isEmpty())
