@@ -322,7 +322,7 @@ QString UserManage::sendItem(const QJsonObject &token, const QJsonObject &info) 
         return ret;
 
     Time sendingTime(Time::getCurYear(), Time::getCurMonth(), Time::getCurDay());
-    int id = itemManage->insertItem(cost, info["type"].toInt(), PENDING_REVEICING, sendingTime, Time(-1, -1, -1), username, info["dstName"].toString(), "未分配", info["description"].toString());
+    int id = itemManage->insertItem(cost, PENDING_REVEICING, info["type"].toInt(), sendingTime, Time(-1, -1, -1), username, info["dstName"].toString(), "未分配", info["description"].toString());
     qDebug() << "添加快递单号为" << id;
     ret = QString::number(cost);
     return ret;
