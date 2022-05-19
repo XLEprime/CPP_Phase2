@@ -121,7 +121,7 @@ QString UserManage::queryItem(const QJsonObject &token, const QJsonObject &filte
     if (filter.contains("dstName"))
         dstName = filter["dstName"].toString();
     if (filter.contains("expressman"))
-        dstName = filter["expressman"].toString();
+        expressman = filter["expressman"].toString();
 
     switch (filter["type"].toInt())
     {
