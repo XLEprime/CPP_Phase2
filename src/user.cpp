@@ -199,8 +199,12 @@ QString UserManage::deleteExpressman(const QJsonObject &token, const QString &ex
     if (userMap[username]->getUserType() != ADMINISTRATOR)
         return "非管理员不能删除快递员";
 
-    if (!db->queryUserByName(expressman))
+    QSharedPointer<User> user = db->queryUserByName(expressman);
+    if (!user)
         return "该快递员不存在";
+
+    if (user->getUserType() != EXPRESSMAN)
+        return "该用户不是快递员，无法删除";
 
     if (db->deleteUser(expressman))
         return "";

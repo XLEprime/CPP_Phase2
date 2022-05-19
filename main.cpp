@@ -243,7 +243,11 @@ int main()
                 qInfo() << "当前没有用户登录，请登录后重试。";
                 continue;
             }
-            userManage.deleteExpressman(token.toObject(), args[1]);
+            QString ret = userManage.deleteExpressman(token.toObject(), args[1]);
+            if (ret.isEmpty())
+                qInfo() << "快递员 " << args[1] << " 删除成功";
+            else
+                qInfo() << "快递员 " << args[1] << " 删除失败" << ret;
         }
         else if (args[0] == "assign" && args.size() == 3 && args[2].toInt(&ok) && ok)
         {
@@ -489,7 +493,7 @@ int main()
             else
                 qInfo() << "查询失败" << ret;
         }
-        else if (args[0] == "queryexpress" && args.size() == 12 && ((args[1] == '*') || args[1].toInt(&ok) && ok) && ((args[2] == '*') || args[2].toInt(&ok) && ok) && ((args[3] == '*') || args[3].toInt(&ok) && ok) && ((args[4] == '*') || args[4].toInt(&ok) && ok) && ((args[5] == '*') || args[5].toInt(&ok) && ok) && ((args[6] == '*') || args[6].toInt(&ok) && ok) && ((args[7] == '*') || args[7].toInt(&ok) && ok)&& ((args[11] == '*') || args[11].toInt(&ok) && ok))
+        else if (args[0] == "queryexpress" && args.size() == 12 && ((args[1] == '*') || args[1].toInt(&ok) && ok) && ((args[2] == '*') || args[2].toInt(&ok) && ok) && ((args[3] == '*') || args[3].toInt(&ok) && ok) && ((args[4] == '*') || args[4].toInt(&ok) && ok) && ((args[5] == '*') || args[5].toInt(&ok) && ok) && ((args[6] == '*') || args[6].toInt(&ok) && ok) && ((args[7] == '*') || args[7].toInt(&ok) && ok) && ((args[11] == '*') || args[11].toInt(&ok) && ok))
         {
             if (token.isNull())
             {
