@@ -24,6 +24,7 @@
         "ctime": "cpp",
         "qdebug": "cpp",
         "string_view": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "fstream": "cpp"
     }
 }

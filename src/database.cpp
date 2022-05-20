@@ -11,6 +11,7 @@
 
 #include "../include/database.h"
 #include <QDebug>
+#include <QDir>
 
 using namespace std;
 
@@ -24,39 +25,19 @@ void Database::exec(const QSqlQuery &sqlQuery)
 
 const QString &Database::getPrimaryKeyByTableName(const QString &tableName)
 {
-    static QString username("username");
+    // static QString username("username");
     static QString id("id");
-    if (tableName == "user")
-        return username;
-    else
-        return id;
+    // if (tableName == "user")
+    //     return username;
+    // else
+    return id;
 }
 
-Database::Database(const QString &connectionName, const QString &fileName) : userFile(fileName), usernameSet()
+Database::Database(const QString &connectionName, const QString &fileName) : userFileName(fileName), usernameSet()
 {
     db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
     db.setDatabaseName("../data/db.sqlite");
     db.open();
-
-    if (!db.tables().contains("user")) //若不包含user，则创建。
-    {
-        QSqlQuery sqlQuery(db);
-        sqlQuery.prepare("CREATE TABLE user( username TEXT PRIMARY KEY NOT NULL,"
-                         "password TEXT NOT NULL,"
-                         "type INT NOT NULL,"
-                         "balance INT NOT NULL,"
-                         "name TEXT NOT NULL,"
-                         "phonenumber TEXT NOT NULL,"
-                         "address TEXT NOT NULL) ");
-
-        exec(sqlQuery);
-        if (!sqlQuery.exec())
-            qCritical() << "user表创建失败" << sqlQuery.lastError();
-        else
-            qDebug() << "user表创建成功";
-    }
-    else
-        qDebug() << "user表已存在";
 
     if (!db.tables().contains("item")) //若不包含item，则创建。
     {
@@ -85,22 +66,29 @@ Database::Database(const QString &connectionName, const QString &fileName) : use
     else
         qDebug() << "item表已存在";
 
+    QFile userFile(userFileName);
     if (!userFile.open(QIODevice::ReadWrite | QIODevice ::Text))
     {
         qCritical() << "user文件打开失败";
         exit(1);
     }
+
+    QTextStream stream;
     bool isAdministratorExist = false;
     stream.setDevice(&userFile);
+    int type, balance;
+    QString username, password, name, phoneNumber, address;
+    char ch;
     while (!stream.atEnd())
     {
-        QString line = stream.readLine();
-        usernameSet.insert(line);
-        if (line == "admin")
+        stream >> username >> password >> type >> balance >> name >> phoneNumber >> address;
+        stream >> ch;
+        usernameSet.insert(username);
+        if (username == "admin")
             isAdministratorExist = true;
     }
     if (!isAdministratorExist)
-        insertUser("admin", "123", ADMINISTRATOR, 0, "Administrator1", "88888888", "环宇物流大厦");
+        insertUser("admin", "123", ADMINISTRATOR, 0, "管理员", "88888888", "环宇物流大厦");
 }
 
 bool Database::modifyData(const QString &tableName, const QString &primaryKey, const QString &key, int value) const
@@ -153,85 +141,146 @@ bool Database::modifyData(const QString &tableName, const QString &primaryKey, c
 
 void Database::insertUser(const QString &username, const QString &password, int type, int balance, const QString &name, const QString &phoneNumber, const QString &address)
 {
-    QSqlQuery sqlQuery(db);
-    sqlQuery.prepare("INSERT INTO user VALUES(:username, :password, :type, :balance, :name, :phonenumber, :address)");
-    sqlQuery.bindValue(":username", username);
-    sqlQuery.bindValue(":password", password);
-    sqlQuery.bindValue(":type", type);
-    sqlQuery.bindValue(":balance", balance);
-    sqlQuery.bindValue(":name", name);
-    sqlQuery.bindValue(":phonenumber", phoneNumber);
-    sqlQuery.bindValue(":address", address);
-
-    exec(sqlQuery);
-    if (sqlQuery.exec())
+    if (!usernameSet.contains(username))
     {
-        qDebug() << "数据库:插入user " << username << " 成功";
+        qDebug() << "文件：插入user " << username << " 成功";
         usernameSet.insert(username);
-        stream << username << Qt::endl;
+        QFile userFile(userFileName);
+        if (!userFile.open(QIODevice::ReadWrite | QIODevice ::Text))
+        {
+            qCritical() << "user文件打开失败";
+            exit(1);
+        }
+        QTextStream stream(&userFile);
+
+        int tempType, tempBalance;
+        QString tempUsername, tempPassword, tempName, tempPhoneNumber, tempAddress;
+        char ch;
+        while (!stream.atEnd())
+        {
+            stream >> tempUsername >> tempPassword >> tempType >> tempType >> tempName >> tempPhoneNumber >> tempAddress;
+            stream >> ch;
+        }
+        qDebug() << username << password << type << balance << name << phoneNumber << address;
+        stream << username << " " << password << " " << type << " " << balance << " " << name << " " << phoneNumber << " " << address << Qt::endl;
+        userFile.close();
     }
     else
-        qCritical() << "数据库:插入user " << username << " 失败" << sqlQuery.lastError();
+        qCritical() << "文件：插入user " << username << "失败"
+                    << "该用户已存在文件中";
 }
 
-QSharedPointer<User> Database::queryUserByName(const QString &username) const
+QSharedPointer<User> Database::queryUserByName(const QString &targetUsername) const
 {
-    QSqlQuery sqlQuery(db);
-    sqlQuery.prepare("SELECT * FROM user WHERE username = :username");
-    sqlQuery.bindValue(":username", username);
+    QFile userFile(userFileName);
+    if (!userFile.open(QIODevice::ReadWrite | QIODevice ::Text))
+    {
+        qCritical() << "user文件打开失败";
+        exit(1);
+    }
+    QTextStream stream(&userFile);
+    int type, balance;
+    QString username, password, name, phoneNumber, address;
+    char ch;
 
-    exec(sqlQuery);
-    if (sqlQuery.exec())
+    while (!stream.atEnd())
     {
-        qDebug() << "数据库:查找user" << username << "操作执行成功";
-        if (sqlQuery.next())
+        stream >> username >> password >> type >> balance >> name >> phoneNumber >> address;
+        stream >> ch;
+        if (username == targetUsername)
         {
-            qDebug() << "数据库:" << username << "在数据库中存在";
-            return query2User(sqlQuery);
+            userFile.close();
+            return query2User(username, password, type, balance, name, phoneNumber, address);
         }
-        qDebug() << "数据库:" << username << "在数据库中不存在";
-        return NULL;
     }
-    else
-    {
-        qCritical() << "数据库:没有username为" << username << "的记录" << sqlQuery.lastError();
-        return NULL;
-    }
+    return NULL;
 }
 
 int Database::queryBalanceByName(const QString &username) const
 {
-    QSqlQuery sqlQuery(db);
-    sqlQuery.prepare("SELECT balance FROM user WHERE username = :username");
-    sqlQuery.bindValue(":username", username);
-
-    exec(sqlQuery);
-    if (!sqlQuery.exec())
-    {
-        qCritical() << "数据库:查找user " << username << " 失败" << sqlQuery.lastError();
-        return 0;
-    }
+    QSharedPointer<User> user = queryUserByName(username);
+    if (user)
+        return user->getBalance();
     else
+        return -1;
+}
+
+bool Database::modifyUserPassword(const QString &targetUsername, const QString &targetPassword) const
+{
+    if (!usernameSet.contains(targetUsername))
+        return false;
+
+    int type, balance;
+    QString username, password, name, phoneNumber, address;
+    char ch;
+    QFile userFile1(userFileName), userFile2("../data/tempUsers.txt");
+    if (!userFile1.open(QIODevice::ReadWrite | QIODevice ::Text))
     {
-        qDebug() << "数据库:查找user " << username << " 成功";
-        if (sqlQuery.next())
-            return sqlQuery.value(0).toInt();
-        else
-        {
-            qFatal("数据库: user 没有balance项"); // todo: 增加username的值进Fatal提示中
-            return 0;
-        }
+        qCritical() << "user文件打开失败";
+        exit(1);
     }
+    if (!userFile2.open(QIODevice::ReadWrite | QIODevice ::Text))
+    {
+        qCritical() << "user文件打开失败";
+        exit(1);
+    }
+    QTextStream stream1(&userFile1);
+    QTextStream stream2(&userFile2);
+
+    while (!stream1.atEnd())
+    {
+        stream1 >> username >> password >> type >> balance >> name >> phoneNumber >> address;
+        stream1 >> ch; //吃一个回车
+        qDebug() << username << password << type << balance << name << phoneNumber << address;
+        if (username == targetUsername)
+            password = targetPassword;
+        stream2 << username << " " << password << " " << type << " " << balance << " " << name << " " << phoneNumber << " " << address << Qt::endl;
+    }
+    userFile1.close();
+    userFile2.close();
+    QDir dir;
+    dir.remove(userFileName);
+    dir.rename("../data/tempUsers.txt", userFileName);
+    return true;
 }
 
-bool Database::modifyUserPassword(const QString &username, const QString &password) const
+bool Database::modifyUserBalance(const QString &targetUsername, int targetBalance) const
 {
-    return modifyData("user", username, "password", password);
-}
+    if (!usernameSet.contains(targetUsername))
+        return false;
 
-bool Database::modifyUserBalance(const QString &username, int balance) const
-{
-    return modifyData("user", username, "balance", balance);
+    int type, balance;
+    QString username, password, name, phoneNumber, address;
+    char ch;
+    QFile userFile1(userFileName), userFile2("../data/tempUsers.txt");
+    if (!userFile1.open(QIODevice::ReadWrite | QIODevice ::Text))
+    {
+        qCritical() << "user文件打开失败";
+        exit(1);
+    }
+    if (!userFile2.open(QIODevice::ReadWrite | QIODevice ::Text))
+    {
+        qCritical() << "user文件打开失败";
+        exit(1);
+    }
+    QTextStream stream1(&userFile1);
+    QTextStream stream2(&userFile2);
+
+    while (!stream1.atEnd())
+    {
+        stream1 >> username >> password >> type >> balance >> name >> phoneNumber >> address;
+        stream1 >> ch; //吃一个回车
+        qDebug() << username << password << type << balance << name << phoneNumber << address;
+        if (username == targetUsername)
+            balance = targetBalance;
+        stream2 << username << " " << password << " " << type << " " << balance << " " << name << " " << phoneNumber << " " << address << Qt::endl;
+    }
+    userFile1.close();
+    userFile2.close();
+    QDir dir;
+    dir.remove(userFileName);
+    dir.rename("../data/tempUsers.txt", userFileName);
+    return true;
 }
 
 int Database::getDBMaxId(const QString &tableName) const
@@ -282,19 +331,19 @@ void Database::insertItem(int id, int cost, int type, int state, const Time &sen
         qDebug() << "数据库:插入id为 " << id << " 的物品项成功 ";
 }
 
-QSharedPointer<User> Database::query2User(const QSqlQuery &sqlQuery) const
+QSharedPointer<User> Database::query2User(const QString &username, QString &password, int &type, int &balance, QString &name, QString &phoneNumber, QString &address) const
 {
     QSharedPointer<User> result;
-    switch (sqlQuery.value(2).toInt())
+    switch (type)
     {
     case CUSTOMER:
-        result = QSharedPointer<Customer>::create(sqlQuery.value(0).toString(), sqlQuery.value(1).toString(), sqlQuery.value(3).toInt(), sqlQuery.value(4).toString(), sqlQuery.value(5).toString(), sqlQuery.value(6).toString());
+        result = QSharedPointer<Customer>::create(username, password, balance, name, phoneNumber, address);
         break;
     case ADMINISTRATOR:
-        result = QSharedPointer<Administrator>::create(sqlQuery.value(0).toString(), sqlQuery.value(1).toString(), sqlQuery.value(3).toInt(), sqlQuery.value(4).toString(), sqlQuery.value(5).toString(), sqlQuery.value(6).toString());
+        result = QSharedPointer<Administrator>::create(username, password, balance, name, phoneNumber, address);
         break;
     case EXPRESSMAN:
-        result = QSharedPointer<Expressman>::create(sqlQuery.value(0).toString(), sqlQuery.value(1).toString(), sqlQuery.value(3).toInt(), sqlQuery.value(4).toString(), sqlQuery.value(5).toString(), sqlQuery.value(6).toString());
+        result = QSharedPointer<Expressman>::create(username, password, balance, name, phoneNumber, address);
         break;
     }
     return result;
@@ -324,26 +373,28 @@ QSharedPointer<Item> Database::query2Item(const QSqlQuery &sqlQuery) const
 
 int Database::queryAllUser(QList<QSharedPointer<User>> &result)
 {
-    QSqlQuery sqlQuery(db);
-    sqlQuery.prepare("SELECT * FROM user");
 
-    exec(sqlQuery);
-    if (sqlQuery.exec())
+    QFile userFile(userFileName);
+    if (!userFile.open(QIODevice::ReadWrite | QIODevice ::Text))
     {
-        int cnt = 0;
-        while (sqlQuery.next())
-        {
-            result.append(query2User(sqlQuery)); //将查找结果转换为临时User对象
-            cnt++;
-        }
-        qDebug() << "数据库:查找用户成功，共" << cnt << "条";
-        return cnt;
+        qCritical() << "user文件打开失败";
+        exit(1);
     }
-    else
+    QTextStream stream(&userFile);
+    int type, balance, cnt = 0;
+    QString username, password, name, phoneNumber, address;
+    char ch;
+
+    while (!stream.atEnd())
     {
-        qCritical() << "数据库:查找用户失败" << sqlQuery.lastError();
-        return 0;
+        cnt++;
+        stream >> username >> password >> type >> balance >> name >> phoneNumber >> address;
+        stream >> ch;
+        result.append(query2User(username, password, type, balance, name, phoneNumber, address));
     }
+
+    userFile.close();
+    return cnt;
 }
 
 int Database::queryItemByFilter(QList<QSharedPointer<Item>> &result, int id, int state, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName, const QString &expressman) const

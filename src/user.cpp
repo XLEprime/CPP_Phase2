@@ -326,7 +326,7 @@ QString UserManage::sendItem(const QJsonObject &token, const QJsonObject &info) 
         return ret;
 
     Time sendingTime(Time::getCurYear(), Time::getCurMonth(), Time::getCurDay());
-    int id = itemManage->insertItem(cost, PENDING_REVEICING, info["type"].toInt(), sendingTime, Time(-1, -1, -1), username, info["dstName"].toString(), "未分配", info["description"].toString());
+    int id = itemManage->insertItem(cost, PENDING_COLLECTING, info["type"].toInt(), sendingTime, Time(-1, -1, -1), username, info["dstName"].toString(), "未分配", info["description"].toString());
     qDebug() << "添加快递单号为" << id;
     ret = QString::number(cost);
     return ret;
@@ -346,7 +346,7 @@ QString UserManage::deliveryItem(const QJsonObject &token, const QJsonObject &in
     QSharedPointer<Item> result;
     if (!itemManage->queryById(result, info["itemId"].toInt()))
         return "不存在运单号为该ID的物品";
-    if (result->getState() != PENDING_REVEICING)
+    if (result->getState() != PENDING_COLLECTING)
         return "该快递已发出";
     if (result->getExpressman() != username)
         return "这不是你所属的快递";

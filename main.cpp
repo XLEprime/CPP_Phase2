@@ -314,7 +314,7 @@ int main()
                 for (const auto &i : queryRet)
                 {
                     QJsonObject item = i.toObject();
-                    qInfo() << "物品单号为 " << item["id"].toInt() << " 花费为 " << item["cost"].toInt() << " 状态为 " << itemState[item["state"].toInt()] << " 寄送时间为 " << item["sendingTime_Year"].toInt() << "/" << item["sendingTime_Month"].toInt() << "/" << item["sendingTime_Day"].toInt()
+                    qInfo() << "物品单号为 " << item["id"].toInt() << " 花费为 " << item["cost"].toInt()<< "快递类型为 " << itemType[item["type"].toInt()] << " 状态为 " << itemState[item["state"].toInt()] << " 寄送时间为 " << item["sendingTime_Year"].toInt() << "/" << item["sendingTime_Month"].toInt() << "/" << item["sendingTime_Day"].toInt()
                             << " 接收时间为 " << item["receivingTime_Year"].toInt() << "/" << item["receivingTime_Month"].toInt() << "/" << item["receivingTime_Day"].toInt() << "/"
                             << " 寄件人为 " << item["srcName"].toString() << "收件人为" << item["dstName"].toString() << "快递员为" << item["expressman"].toString() << "描述为" << item["description"].toString();
                 }

@@ -7,9 +7,9 @@
  *
  * @copyright Copyright (c) 2022
  *
+ * @note 用户信息使用txt文件存储，快递信息使用sqlite数据库存储。
  * @note 对于用户部分, 定义了插入用户(注册), 查询用户, 修改用户密码, 修改用户余额的接口.
  * @note 对于物品部分, 定义了插入物品, 查询物品(根据发送人/接收人/时间/快递单号即id), 修改物品信息, 删除物品的接口.
- * @note 额外定义了部分工具接口，有...
  */
 
 #ifndef DATABASE_H
@@ -63,10 +63,10 @@ public:
 
     /**
      * @brief 根据用户名查询用户是否存在
-     * @param username 用户名
+     * @param targetUsername 用户名
      * @return QSharedPointer<User> 查询到用户则返回指针，否则返回NULL
      */
-    QSharedPointer<User> queryUserByName(const QString &username) const;
+    QSharedPointer<User> queryUserByName(const QString &targetUsername) const;
 
     /**
      * @brief 获得用户名对应的余额
@@ -78,22 +78,22 @@ public:
     /**
      * @brief 修改用户密码
      *
-     * @param username 用户名
-     * @param password 新密码
+     * @param targetUsername 用户名
+     * @param targetPassword 新密码
      * @return true 修改成功
      * @return false 修改失败
      */
-    bool modifyUserPassword(const QString &username, const QString &password) const;
+    bool modifyUserPassword(const QString &targetUsername, const QString &targetPassword) const;
 
     /**
      * @brief 修改用户余额
      *
-     * @param username 用户名
-     * @param balance 改后的余额
+     * @param targetUsername 用户名
+     * @param targetBalance 改后的余额
      * @return true 修改成功
      * @return false 修改失败
      */
-    bool modifyUserBalance(const QString &username, int balance) const;
+    bool modifyUserBalance(const QString &targetUsername, int targetBalance) const;
 
     /**
      * @brief 查询表中主键的最大值
@@ -119,11 +119,17 @@ public:
     void insertItem(int id, int cost, int type, int state, const Time &sendingTime, const Time &receivingTime, const QString &srcName, const QString &dstName, const QString &expressman, const QString &description);
 
     /**
-     * @brief 将数据库的User查询结果转换成指向User的指针
-     * @param sqlQuery User类的查询结果
+     * @brief 将文件的User查询结果转换成指向User的指针
+     * @param username 用户名
+     * @param password 密码
+     * @param type 用户类型
+     * @param balance 余额
+     * @param name 姓名
+     * @param phoneNumber 电话号码
+     * @param address 地址
      * @return QSharedPointer<User> 一个指向新创建的User类的指针
      */
-    QSharedPointer<User> query2User(const QSqlQuery &sqlQuery) const;
+    QSharedPointer<User> query2User(const QString &username, QString &password, int &type, int &balance, QString &name, QString &phoneNumber, QString &address) const;
 
     /**
      * @brief 将数据库的Item查询结果转换成指向Item的指针
@@ -197,9 +203,8 @@ public:
     bool deleteUser(const QString username) const;
 
 private:
-    QSqlDatabase db;    // SQLite数据库
-    QFile userFile;     //永久存储用户名文件
-    QTextStream stream; //用户读写用户名的stream
+    QSqlDatabase db;      // SQLite数据库
+    QString userFileName; //永久存储用户信息文件
 
     /**
      * @brief 执行SQL语句
