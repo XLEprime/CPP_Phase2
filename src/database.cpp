@@ -23,6 +23,7 @@ void Database::exec(const QSqlQuery &sqlQuery)
         qDebug() << i.key().toUtf8().data() << ":" << i.value().toString().toUtf8().data();
 }
 
+//由于user信息改为文件存储，数据库中只有一个表了，保留以做拓展性。
 const QString &Database::getPrimaryKeyByTableName(const QString &tableName)
 {
     // static QString username("username");
@@ -538,20 +539,40 @@ bool Database::deleteItem(const int id) const
     }
 }
 
-bool Database::deleteUser(const QString username) const
+bool Database::deleteUser(const QString targetUsername) const
 {
-    QSqlQuery sqlQuery(db);
-    sqlQuery.prepare("DELETE FROM user WHERE username = :username");
-    sqlQuery.bindValue(":username", username);
-    exec(sqlQuery);
-    if (!sqlQuery.exec())
-    {
-        qCritical() << "数据库删除username为 " << username << " 的项失败";
+    if (!usernameSet.contains(targetUsername))
         return false;
-    }
-    else
+
+    int type, balance;
+    QString username, password, name, phoneNumber, address;
+    char ch;
+    QFile userFile1(userFileName), userFile2("../data/tempUsers.txt");
+    if (!userFile1.open(QIODevice::ReadWrite | QIODevice ::Text))
     {
-        qDebug() << "数据库删除username为 " << username << " 的项成功";
-        return true;
+        qCritical() << "user文件打开失败";
+        exit(1);
     }
+    if (!userFile2.open(QIODevice::ReadWrite | QIODevice ::Text))
+    {
+        qCritical() << "user文件打开失败";
+        exit(1);
+    }
+    QTextStream stream1(&userFile1);
+    QTextStream stream2(&userFile2);
+
+    while (!stream1.atEnd())
+    {
+        stream1 >> username >> password >> type >> balance >> name >> phoneNumber >> address;
+        stream1 >> ch; //吃一个回车
+        qDebug() << username << password << type << balance << name << phoneNumber << address;
+        if (username != targetUsername)
+            stream2 << username << " " << password << " " << type << " " << balance << " " << name << " " << phoneNumber << " " << address << Qt::endl;
+    }
+    userFile1.close();
+    userFile2.close();
+    QDir dir;
+    dir.remove(userFileName);
+    dir.rename("../data/tempUsers.txt", userFileName);
+    return true;
 }
